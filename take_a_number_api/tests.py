@@ -28,7 +28,6 @@ class QueueTest(TestCase):
         q = self.create_queue()
         self.assertEqual(0, q.size())
         self.assertEqual(True, q.isEmpty())
-        self.assertEqual()
 
     def test_remove(self):
         q = self.create_queue()
