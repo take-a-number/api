@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'take_a_number',
+    # 'take-a-number.apps.TakeANumberConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
