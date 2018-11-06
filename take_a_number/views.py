@@ -10,9 +10,20 @@ def index(request, terms = ''):
 
 
 def course(request, name = ''):
-    if request.method == 'POST':
+    # Get class state if exists, else do a search
+    if request.method == 'GET':
+        return render(request, 'class-remote.html')
+    # Modify class state
+    elif request.method == 'POST':
         return render(request, 'class-student.html')
-    return render(request, 'class-remote.html')
+    # Create a class
+    elif request.method == 'PUT':
+        pass
+    # Delete a class
+    elif request.method == 'DELETE':
+        pass
+    return HttpResponseNotFound()
+
 
 @csrf_protect
 def course_create(request):
