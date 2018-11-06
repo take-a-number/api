@@ -1,11 +1,5 @@
-def class_search(request):
-    return
+from django.http import HttpResponse, HttpResponseNotFound, HttpRequest
 
-def class_create(request):
-    return
 
-def student(request):
-    return
-
-def intructor(request):
-    return
+def course(request: HttpRequest, name: str = ''):
+    return HttpResponseNotFound()
