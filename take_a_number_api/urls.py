@@ -18,10 +18,5 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-<<<<<<< HEAD
     url(r'^', include('take_a_number.urls'))
 ]
-=======
-    url(r'^', include('navigation.urls'))
-]
->>>>>>> b279877aad9546fbe56e267a61797d36702a81c0
