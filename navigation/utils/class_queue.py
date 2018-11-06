@@ -33,13 +33,14 @@ class ClassQueue:
             if self.items[i].id == id:
                 return self.items.pop(i)
             i+=1
+        return -1 # did not find the student
 
     # Get how many students preceded someone in the queue, based on ID
-    def status(self, id):
+    def position(self, id):
         i = 0
         while i < len(self.items):
             if self.items[i].id == id:
-                break
+                return i
             i+=1
-        return i
+        return -1 # did not find the student
 
