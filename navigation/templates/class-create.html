@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="#000000">
+  <link rel="stylesheet" href="css/pure.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="shortcut icon" type="image/png" href="res/favicon.png"/>
+  <title>Take a Number</title>
+</head>
+<body>
+<!--
+  This HTML file is the class page as viewed by a logged-in instructor. Add content here.
+-->
+<div class="header-block">
+  <a href="index.html"><img id="logo" src="res/logo.png"/></a>
+</div>
+<div class="padded">
+  <h1>Create Class</h1>
+  <!--<p>Just fill out a quick form, and your class will be all set up!</p>-->
+  <form class="pure-form pure-form-aligned" style="margin-left: auto; margin-right: auto; max-width: 32em;"
+        onsubmit="event.preventDefault()">
+    <fieldset>
+      <div class="pure-control-group">
+        <label for="name">Name:</label>
+        <input id="name" name="name" type="text" placeholder="Full Name" required>
+      </div>
+      <div class="pure-control-group">
+        <label for="email">Email:</label>
+        <input id="email" name="email" type="email" placeholder="Email Address" required>
+        <div class="pure-form-message-inline">We'll send you a link you can use to access your class.</div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <div class="pure-control-group">
+        <label for="school">School:</label>
+        <input id="school" name="school" type="text" placeholder="School" required>
+      </div>
+      <div class="pure-control-group">
+        <label for="class">Class:</label>
+        <input id="class" name="class" type="text" placeholder="Class" required>
+      </div>
+      <div class="pure-control-group">
+        <label for="term">Term:</label>
+        <select id="term">
+          <option>Full Year</option>
+          <option>Fall</option>
+          <option>Spring</option>
+          <option>Summer</option>
+        </select>
+        <select id="year">
+          <option>2018</option>
+          <option>2019</option>
+          <option>2020</option>
+        </select>
+      </div>
+      <div class="pure-control-group">
+        <label for="keywords">Keywords:</label>
+        <textarea id="keywords" style="height: 6em;" name="keywords" placeholder="Keywords to help students find the class."></textarea>
+        <div class="pure-form-message">This is optional&mdash;we'll also generate a few keywords to help you out.</div>
+      </div>
+      <div class="pure-controls">
+        <button id="submitBtn" class="pure-button pure-button-primary" type="submit">Register</button>
+      </div>
+    </fieldset>
+  </form>
+</div>
+</body>
+</html>
