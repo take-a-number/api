@@ -30,7 +30,7 @@ def course_create(request):
     form = ClassForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         class_instance = Class(**form.cleaned_data)
-        # class_instance.save()
+        class_instance.save()
         course = class_instance.course_name
         return HttpResponseRedirect('/class/state/' + course)
 

@@ -1,6 +1,6 @@
 from django.test import TestCase
-from navigation.utils.class_queue import ClassQueue
-from navigation.utils.class_queue import QueueMember
+from take_a_number.class_queue import ClassQueue
+from take_a_number.class_queue import QueueMember
 
 class QueueTest(TestCase):
     def create_member1(self, name="Name1", id=1):
