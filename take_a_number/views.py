@@ -1,5 +1,5 @@
 from django.http import HttpResponse, HttpResponseNotFound, HttpRequest, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Class
 from .forms import ClassForm
 from django.views.decorators.csrf import csrf_protect
@@ -10,9 +10,10 @@ def index(request, terms = ''):
 
 
 def course(request, name = ''):
+    # course = get_object_or_404(Class, name=name)
     # Get class state if exists, else do a search
     if request.method == 'GET':
-        return render(request, 'class-remote.html')
+        return render(request, 'class-remote.html', {'name': name})
     # Modify class state
     elif request.method == 'POST':
         return render(request, 'class-student.html')
@@ -30,7 +31,7 @@ def course_create(request):
     form = ClassForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         class_instance = Class(**form.cleaned_data)
-        # class_instance.save()
+        class_instance.save()
         course = class_instance.course_name
         return HttpResponseRedirect('/class/state/' + course)
 
