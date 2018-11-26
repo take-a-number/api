@@ -4,6 +4,8 @@ from .models import Class
 from .forms import ClassForm
 from django.views.decorators.csrf import csrf_protect
 
+# Dictionary where keys are the course names and values the queues of each active course
+state = {}
 
 def index(request, terms = ''):
     return render(request, 'index.html')
@@ -12,15 +14,19 @@ def index(request, terms = ''):
 def course(request, name = ''):
     # Get class state if exists, else do a search
     if request.method == 'GET':
+        # query DB for the course
         return render(request, 'class-remote.html')
-    # Modify class state
+    # Modify session (queue) state
     elif request.method == 'POST':
+        # modify DB with the course
         return render(request, 'class-student.html')
-    # Create a class
+    # Create a session (queue)
     elif request.method == 'PUT':
+        # add new course to DB
         pass
-    # Delete a class
+    # Delete a session (queue)
     elif request.method == 'DELETE':
+        # remove course from DB
         pass
     return HttpResponseNotFound()
 
