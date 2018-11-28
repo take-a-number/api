@@ -1,3 +1,6 @@
+import json
+
+
 # Objects which will go on the queue, holding the person's name and a unique ID
 class QueueStudent:
     def __init__(self, name, id):
@@ -12,6 +15,7 @@ class QueueTA:
 
 
 # Underlying queue which which be created for each class
+# Queue itself is not associated with a course; the application state must track it
 class ClassQueue:
     def __init__(self):
         self.students = []
@@ -22,8 +26,26 @@ class ClassQueue:
         return self.students == []
 
     # Check whether the ClassQueue has any TAs
-    def hasTa(self):
+    def hasTas(self):
         return self.tas != []
+
+    def getTas(self):
+        return self.tas
+
+    def getTasJson(self):
+        return json.dumps(self.getTas())
+
+    def getStudents(self):
+        return self.students
+
+    def getStudentsJson(self):
+        return json.dumps(self.getStudents())
+
+    def asDict(self):
+        resp = {}
+        resp['students'] = self.getStudents()
+        resp['teachingAssistants'] = self.getTas()
+        return resp
 
     # Add a TA to the class (object of type QueueTA)
     def addTA(self, ta):
