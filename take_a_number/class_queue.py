@@ -32,14 +32,11 @@ class ClassQueue:
     def getTas(self):
         return self.tas
 
-    def getTasJson(self):
-        return json.dumps(self.getTas())
+    def hasStudents(self):
+        return self.students != []
 
     def getStudents(self):
         return self.students
-
-    def getStudentsJson(self):
-        return json.dumps(self.getStudents())
 
     def asDict(self):
         resp = {}
@@ -73,7 +70,6 @@ class ClassQueue:
         return len(self.students)
 
     # Remove a student from the ClassQueue by ID
-    # TODO - figure out whether this should be done by ID
     def removeStudent(self, studentId):
         i = 0
         while i < len(self.students):
