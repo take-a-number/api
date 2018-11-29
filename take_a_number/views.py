@@ -24,7 +24,10 @@ def course(request, name = ''):
         # make course data serializable
         course_dict = dict(course.__dict__)
         course_dict.pop('_state', None)
-        return HttpResponse(content=json.dumps(course_dict)) # return a JSON from the dict
+        courseAbbreviation = course.course_name
+        resp = state[courseAbbreviation]
+        resp['courseAbbreviation'] = courseAbbreviation
+        return HttpResponse(content=json.dumps(resp))  # return a JSON from the dict
 
     # Modify session (queue) state based on ID of student/TA to join/leave
     elif request.method == 'POST':
