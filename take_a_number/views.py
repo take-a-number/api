@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 from django.http import HttpResponse, HttpResponseNotFound, HttpRequest, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render
+=======
+from django.http import HttpResponse, HttpResponseNotFound, HttpRequest, HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404
+from .models import Class, OfficeHoursSession
+from .forms import ClassForm
+>>>>>>> b32f688be4268b94a4ce35fdf0f265ba9b4ec063
 from django.views.decorators.csrf import csrf_protect
 import json
 from typing import Dict
@@ -8,6 +15,7 @@ import uuid
 
 from .models import Course, OfficeHours, Student, TeachingAssistant
 from take_a_number.class_queue import ClassQueue, QueueStudent, QueueTA
+
 
 # Dictionary where keys are the course names and values the queues of each active course
 # Associates the course abbreviation with an active class
@@ -74,15 +82,18 @@ def course_office_hours(request: HttpRequest, course_abbreviation):
             course_abbreviation, random_join_code(), [], []),
     # Get a course's office hours
     if request.method == 'GET':
-        # return a JSON from the dict
-        office_hours = office_hours_sessions[course_abbreviation]
-        officeHours = {'courseAbbreviation': office_hours.course_abbreviation,
-                       'teachingAssistants': office_hours.teaching_assistants,
-                       'students': office_hours.students,
-                       }
-        return HttpResponse(content=json.dumps(officeHours))
+        # query DB for the course
+        course = get_object_or_404(Class, course_name=name)
 
-    # Modify the course office hours. Does nothing right now.
+        # make course data serializable
+        course_dict = dict(course.__dict__)
+        course_dict.pop('_state', None)
+        courseAbbreviation = course.course_name
+        resp = state[courseAbbreviation]
+        resp['courseAbbreviation'] = courseAbbreviation
+        return HttpResponse(content=json.dumps(resp))  # return a JSON from the dict
+
+    # Modify session (queue) state based on ID of student/TA to join/leave
     elif request.method == 'POST':
         return HttpResponseBadRequest()
 
