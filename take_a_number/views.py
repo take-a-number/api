@@ -1,77 +1,139 @@
-from django.http import HttpResponse, HttpResponseNotFound, HttpRequest, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseNotFound, HttpRequest, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
-from .models import Class, OfficeHoursSession
-from .forms import ClassForm
 from django.views.decorators.csrf import csrf_protect
 import json
+from typing import Dict
+import random
+import uuid
+
+from .models import Course, OfficeHours, Student, TeachingAssistant
 from take_a_number.class_queue import ClassQueue, QueueStudent, QueueTA
 
 
 # Dictionary where keys are the course names and values the queues of each active course
 # Associates the course abbreviation with an active class
-state = {}
+courses: Dict[str, Course] = {'CS3251': Course(
+    'CS3251', 'Intermediate Software Design', '43eaa6d8-5def-4567-a50c-293dc3566640', 'TA1234')}
+#   {
+#     abbreviation: 'CS3251',
+#     description: 'Intermediate Software Design',
+#     id: '43eaa6d8-5def-4567-a50c-293dc3566640',
+#   },
+#   {
+#     abbreviation: 'CS3250',
+#     description: 'Algorithms',
+#     id: '2b77c97b-1708-401c-bbc3-5323a480ee48',
+#   },
+#   {
+#     abbreviation: 'CS3270',
+#     description: 'Programming Languages',
+#     id: 'd9367a7d-4ec8-4ab6-a680-017a7326d1fd',
+#   },
+#   {
+#     abbreviation: 'CS2212',
+#     description: 'Discrete Structures',
+#     id: '7c3dc539-6b47-4772-a9a9-5384c0e420b9',
+#   },
 
-def index(request, terms = ''):
-    return render(request, 'index.html')
+office_hours_sessions: Dict[str, OfficeHours] = {}
 
 
-def course(request, name = ''):
-    # Get class state if exists, else do a search
+def random_join_code() -> str:
+    ''.join(random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+            for i in range(6))
+
+
+def get_identity(req: HttpRequest, course_abbreviation):
+    if course_abbreviation not in courses or course_abbreviation not in office_hours_sessions:
+        return None
+    office_hours = office_hours_sessions[course_abbreviation]
+    if 'id' in req.session:
+        id = req.session['id']
+        if id in office_hours.student_sessions:
+            return office_hours.student_sessions[id]
+        elif id in office_hours.teaching_assistant_sessions:
+            return office_hours.teaching_assistant_sessions[id]
+
+
+def course_office_hours_identity(request: HttpRequest, course_abbreviation):
+    identity = get_identity(request, course_abbreviation)
+    if identity == None:
+        return HttpResponseForbidden()
+    else:
+        return HttpResponse(json.dumps(identity._asdict()))
+
+
+def courses_list(request: HttpRequest):
+    return HttpResponse(content=json.dumps(courses.values()))
+
+
+def course_office_hours(request: HttpRequest, course_abbreviation):
+    if course_abbreviation not in courses:
+        return HttpResponseNotFound()
+    if course_abbreviation not in office_hours_sessions:
+        office_hours_sessions[course_abbreviation] = OfficeHours(
+            course_abbreviation, random_join_code(), [], []),
+    # Get a course's office hours
     if request.method == 'GET':
-        # query DB for the course
-        course = get_object_or_404(Class, course_name=name)
-
-        # make course data serializable
-        course_dict = dict(course.__dict__)
-        course_dict.pop('_state', None)
-        courseAbbreviation = course.course_name
-        resp = state[courseAbbreviation]
+        req = json.loads(request.body)
+        courseAbbreviation = req.courseAbbreviation
+        # get the lists of students and TAs, and make a dictionary from them
+        resp = courses[courseAbbreviation]
         resp['courseAbbreviation'] = courseAbbreviation
         return HttpResponse(content=json.dumps(resp))  # return a JSON from the dict
 
     # Modify session (queue) state based on ID of student/TA to join/leave
     elif request.method == 'POST':
-        # modify DB with the course
-        req = json.loads(request.body)
-        courseAbbreviation = req.courseAbbreviation
-        # modifying a session that does not exist yet; throw an error
-        if not courseAbbreviation in state:
-            return HttpResponseNotFound()
-        queue = state[courseAbbreviation]
-        # TODO do some action on the queue with the ID, name, and join/leave
-        return render(request, 'class-student.html')
+        return HttpResponseBadRequest()
 
-    # Create a session (queue) with a list of TAs
+    # A user has entered a join code, create a session.
     elif request.method == 'PUT':
-        # add new course to DB
-        req = json.loads(request.body)
-        courseAbbreviation = req.courseAbbreviation
-        tas = req.teachingAssistants
-        # TODO make a new QueueTA for each TA and add to a new ClassQueue object
-        # newQueue = QueueTA(name="PLACEHOLDER", id=)
-        # TODO add ClassQueue to the state
-        pass
+        body: Dict[str, str] = json.loads(request.body)
+        # TODO Use constant time comparison here
+        if 'joinCode' in body and 'name' in body:
+            if body['joinCode'] == office_hours_sessions[course_abbreviation].student_join_code:
+                new_uuid = uuid.uuid4()
+                office_hours_sessions[course_abbreviation].student_sessions[new_uuid] = Student(body['name'], )
+                return HttpResponse()
+            elif body['joinCode'] == courses[course_abbreviation].teaching_assistant_join_code:
+                office_hours_sessions[course_abbreviation].teaching_assistants.append(
+                    Student())
+                return HttpResponse()
+            else:
+                return HttpResponseForbidden()
+        else:
+            return HttpResponseBadRequest()
 
-    # Delete a session (queue)
+    # A user has left office hours
     elif request.method == 'DELETE':
-        # remove course from DB
-        req = json.loads(request.body)
-        courseAbbreviation = req.courseAbbreviation
-        if not courseAbbreviation in state: # make sure the course exists
-            return HttpResponseNotFound()
-        state.pop(courseAbbreviation) # remove the element from the state
+        req: Dict[str, str] = json.loads(request.body)
+        # TODO grab user info from session
 
-    return HttpResponseNotFound()
+    return HttpResponseBadRequest()
 
 
-@csrf_protect
-def course_create(request):
-    form = ClassForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        class_instance = Class(**form.cleaned_data)
-        class_instance.save()
-        course = class_instance.course_name
-        return HttpResponseRedirect('/class/state/' + course)
+def course_office_hours_queue(request: HttpRequest, course_abbreviation):
+    if course_abbreviation not in courses or course_abbreviation not in office_hours_sessions:
+        return HttpResponseNotFound()
+    if request.method == 'PUT':  # student adds self to queue
+        pass
+    elif request.method == 'DELETE':  # student removes self from queue
+        pass
+    elif request.method == 'POST':  # student updates own state on queue
+        pass
+    else:
+        return HttpResponseBadRequest()
 
-    return render(request, 'class-create.html')
 
+def course_office_hours_teaching_assistants(request: HttpRequest, course_abbreviation):
+    if course_abbreviation not in courses or course_abbreviation not in office_hours_sessions:
+        return HttpResponseNotFound()
+    if request.method == 'PUT':  # TA adds self to office hours
+        pass
+    elif request.method == 'DELETE':  # TA removes self from office hours
+        pass
+    # TA updates own state (i.e. can start helping someone)
+    elif request.method == 'POST':
+        pass
+    else:
+        return HttpResponseBadRequest()
