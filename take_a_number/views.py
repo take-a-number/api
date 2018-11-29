@@ -3,11 +3,13 @@ from django.shortcuts import render, get_object_or_404
 from .models import Class, OfficeHoursSession
 from .forms import ClassForm
 from django.views.decorators.csrf import csrf_protect
-from uuid import UUID
-from django.contrib.sessions.models import Session
-from django.contrib.sessions.backends.db import SessionStore
-from datetime import datetime, timedelta
+import json
+from take_a_number.class_queue import ClassQueue, QueueStudent, QueueTA
 
+
+# Dictionary where keys are the course names and values the queues of each active course
+# Associates the course abbreviation with an active class
+state = {}
 
 def index(request, terms = ''):
     return render(request, 'index.html')
@@ -19,35 +21,46 @@ def course(request, name = ''):
 
     # Get class state if exists, else do a search
     if request.method == 'GET':
-        return render(request, 'class-remote.html', {'name': name})
-    # Modify class state
-    elif request.method == 'POST':
-        code = request.POST['join_input']
+        # query DB for the course
+        req = json.loads(request.body)
+        courseAbbreviation = req.courseAbbreviation
+        # get the lists of students and TAs, and make a dictionary from them
+        resp = state[courseAbbreviation]
+        resp['courseAbbreviation'] = courseAbbreviation
+        return HttpResponse(content=json.dumps(resp)) # return a JSON from the dict
 
-        if code[0].isnumeric():  # instructor
-            active_session = list(OfficeHoursSession.objects.filter(instructorCode=code))
-            if len(active_session) == 0:  # no active session, create new session
-                s = OfficeHoursSession()
-                data = s.get_decoded()
-                data['teachingAssistants'] = [user]
-                data['students'] = []
-                s.instructorCode = code
-                s.expire_date = datetime.now() + timedelta(hours=12)
-                s.session_data = SessionStore().encode(data)
-                s.save()
-                active_session.append(OfficeHoursSession.objects.get(pk=s.session_key))
-        else:  # student
-            active_session = list(OfficeHoursSession.objects.filter(studentCode=code))
-            if len(active_session) == 0:
-                return HttpResponseNotFound('<h1>The join code entered was invalid</h1>')
-        data = active_session[0].get_decoded()
+    # Modify session (queue) state based on ID of student/TA to join/leave
+    elif request.method == 'POST':
+        # modify DB with the course
+        req = json.loads(request.body)
+        courseAbbreviation = req.courseAbbreviation
+        # modifying a session that does not exist yet; throw an error
+        if not courseAbbreviation in state:
+            return HttpResponseNotFound()
+        queue = state[courseAbbreviation]
+        # TODO do some action on the queue with the ID, name, and join/leave
         return render(request, 'class-student.html')
-    # Create a class
+
+    # Create a session (queue) with a list of TAs
     elif request.method == 'PUT':
+        # add new course to DB
+        req = json.loads(request.body)
+        courseAbbreviation = req.courseAbbreviation
+        tas = req.teachingAssistants
+        # TODO make a new QueueTA for each TA and add to a new ClassQueue object
+        # newQueue = QueueTA(name="PLACEHOLDER", id=)
+        # TODO add ClassQueue to the state
         pass
-    # Delete a class
+
+    # Delete a session (queue)
     elif request.method == 'DELETE':
-        pass
+        # remove course from DB
+        req = json.loads(request.body)
+        courseAbbreviation = req.courseAbbreviation
+        if not courseAbbreviation in state: # make sure the course exists
+            return HttpResponseNotFound()
+        state.pop(courseAbbreviation) # remove the element from the state
+
     return HttpResponseNotFound()
 
 
