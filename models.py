@@ -1,4 +1,3 @@
-from django.db import models
 from collections import namedtuple
 from enum import Enum
 
@@ -12,8 +11,8 @@ Course = namedtuple('Course', ['abbreviation', 'description', 'id', 'teaching_as
 # }
 
 
-OfficeHours = namedtuple('OfficeHours', [
-                         'course_abbreviation', 'student_join_code', 'teaching_assistants', 'students', 'student_sessions', 'teaching_assistant_sessions'])
+OfficeHours = namedtuple('OfficeHours',
+                         'course_abbreviation, student_join_code, teaching_assistants, students, student_sessions, teaching_assistant_sessions')
 # interface IOfficeHours {
 #   courseAbbreviation: string;
 #   studentJoinCode?: string;
