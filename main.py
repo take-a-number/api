@@ -7,14 +7,14 @@ import uuid
 import os
 import json
 
-from models import Course, OfficeHours, Student, TeachingAssistant, UserType
+from models import Course, OfficeHours, Student, TeachingAssistant
 from take_a_number.class_queue import ClassQueue, QueueStudent, QueueTA
 
 app = Flask(__name__)
-FlaskUUID(app)
 CORS(app, supports_credentials=True)
 app.secret_key = os.urandom(24)
-app.config.update(SESSION_COOKIE_HTTPONLY=False, SESSION_COOKIE_SECURE=True)
+app.config.update(SESSION_COOKIE_HTTPONLY=False, SESSION_COOKIE_SECURE=False)
+FlaskUUID(app)
 
 # Dictionary where keys are the course names and values the queues of each active course
 # Associates the course abbreviation with an active class
@@ -45,32 +45,24 @@ office_hours_sessions: Dict[uuid.UUID, OfficeHours] = {}
 
 
 def random_join_code() -> str:
-    ''.join(random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-            for i in range(6))
+    return ''.join(random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                   for i in range(6))
 
 
-def get_identity(course_id):
+def get_identity(course_id) -> str:
     if course_id not in courses or course_id not in office_hours_sessions:
         return None
     office_hours = office_hours_sessions[course_id]
     if 'whoami' in session:
-        whoami: uuid.UUID = session['whoami']
+        whoami: str = session['whoami']
         if whoami in office_hours.student_sessions:
             return office_hours.student_sessions[whoami]
         elif whoami in office_hours.teaching_assistant_sessions:
             return office_hours.teaching_assistant_sessions[whoami]
-
-    # url(r'^$', views.courses_list),
-    # url(r'^(?P<course_abbreviation>[A-Z]+[_.-][0-9]+)/office_hours/identity',
-    #     views.course_office_hours_identity),
-    # url(r'^(?P<course_abbreviation>[A-Z]+[_.-][0-9]+)/office_hours',
-    #     views.course_office_hours),
-    # url(r'^(?P<course_abbreviation>[A-Z]+[_.-][0-9]+)/office_hours/queue',
-    #     views.course_office_hours_queue),
-    # url(r'^(?P<course_abbreviation>[A-Z]+[_.-][0-9]+)/office_hours/teaching_assistants',
+    return None
 
 
-@app.route("/<uuid:course_id>/office_hours/identity/")
+@app.route("/<uuid:course_id>/office_hours/identity")
 def course_office_hours_identity(course_id):
     identity = get_identity(course_id)
     if identity is None:
@@ -88,39 +80,48 @@ def course_office_hours(course_id):
     if course_id not in courses:
         abort(404)
     if course_id not in office_hours_sessions:
-        office_hours_sessions[course_id] = OfficeHours(course_id, random_join_code(), [], [], {}, {})
+        office_hours_sessions[course_id] = OfficeHours(
+            course_id, random_join_code(), [], [], {}, {})
     # Get a course's office hours
     if request.method == 'GET':
         # return a JSON from the dict
         office_hours = office_hours_sessions[course_id]
-        print(office_hours)
         course = courses[course_id]
         officeHours = {'courseAbbreviation': course.abbreviation,
-                       'teachingAssistants': office_hours.teaching_assistants,
-                       'students': office_hours.students,
+                       'teachingAssistants': list(map(lambda x: x._asdict(), office_hours.teaching_assistants)),
+                       'students': list(map(lambda x: x._asdict(), office_hours.students)),
                        }
-        return jsonify(officeHours)
+        identity = get_identity(course_id)
+        if identity is None:
+            return json.dumps(officeHours)
+        if identity.id in office_hours.teaching_assistant_sessions:
+            print(office_hours.student_join_code)
+            officeHours['studentJoinCode'] = office_hours.student_join_code
+        return json.dumps(officeHours)
 
-    # Modify the course office hours. Does nothing right now.
+    # Modify the course office hours session. Does nothing right now.
     elif request.method == 'POST':
         return abort(400)
 
-    # A user has entered a join code, create a session.
+    # A user has entered a join code, create a session if DNE.
     elif request.method == 'PUT':
-        json_req: Dict[str, str] = json.loads(request.get_json())
-        print(json_req)
-        print(type(json_req))
+        json_req = request.get_json()
         if json_req is None:
             abort(401)
+        json_req: Dict[str, str] = json.loads(json_req)
         # TODO Use constant time comparison here
         if 'joinCode' in json_req and 'name' in json_req:
             if json_req['joinCode'] == office_hours_sessions[course_id].student_join_code:
-                new_uuid = uuid.uuid4()
-                office_hours_sessions[course_id].student_sessions[new_uuid] = Student(json_req['name'], new_uuid, UserType.Student)
+                new_uuid = uuid.uuid4().hex
+                office_hours_sessions[course_id].student_sessions[new_uuid] = Student(
+                    json_req['name'], new_uuid, "student")
+                session['whoami'] = new_uuid
                 return "{}"
             elif json_req['joinCode'] == courses[course_id].teaching_assistant_join_code:
-                new_uuid = uuid.uuid4()
-                office_hours_sessions[course_id].teaching_assistants.append(TeachingAssistant(json_req['name'], new_uuid, UserType.Student, None))
+                new_uuid = uuid.uuid4().hex
+                office_hours_sessions[course_id].teaching_assistant_sessions[new_uuid] = TeachingAssistant(
+                    json_req['name'], new_uuid, "teaching_assistant", None)
+                session['whoami'] = new_uuid
                 return "{}"
             else:
                 abort(401)
@@ -129,19 +130,34 @@ def course_office_hours(course_id):
 
     # A user has left office hours
     elif request.method == 'DELETE':
-        req: Dict[str, str] = request.get_json()
+        req: Dict[str, str] = json.loads(request.get_json())
         # TODO grab user info from session
 
 
-@app.route("/<uuid:course_id>/office_hours/queue", methods=['POST', 'PUT', 'DELETE'])
+@app.route("/<uuid:course_id>/office_hours/students", methods=['POST', 'PUT', 'DELETE'])
 def course_office_hours_queue(course_id):
     if course_id not in courses or course_id not in office_hours_sessions:
         abort(404)
+    identity = get_identity(course_id)
+    if identity is None or identity.id not in office_hours_sessions[course_id].student_sessions:
+        abort(401)
+    student = office_hours_sessions[course_id].student_sessions[identity.id]
+
     if request.method == 'PUT':  # student adds self to queue
-        pass
-    elif request.method == 'DELETE':  # student removes self from queue
-        pass
-    elif request.method == 'POST':  # student updates own state on queue
+        session_dict = office_hours_sessions[course_id]._asdict()
+        session_dict['students'].append(student)
+        office_hours_sessions[course_id] = OfficeHours(**session_dict)
+        return '{}'
+
+    if student not in office_hours_sessions[course_id].students:
+        abort(400)
+
+    if request.method == 'DELETE':  # student removes self from queue
+        session_dict = office_hours_sessions[course_id]._asdict()
+        session_dict['students'].remove(student)
+        office_hours_sessions[course_id] = OfficeHours(**session_dict)
+        return '{}'
+    elif request.method == 'POST':  # student updates own state on queue. No-op for now
         pass
 
 
@@ -149,13 +165,49 @@ def course_office_hours_queue(course_id):
 def course_office_hours_teaching_assistants(course_id):
     if course_id not in courses or course_id not in office_hours_sessions:
         abort(404)
-    if request.method == 'PUT':  # TA adds self to office hours
-        pass
-    elif request.method == 'DELETE':  # TA removes self from office hours
-        pass
-    # TA updates own state (i.e. can start helping someone)
+    identity = get_identity(course_id)
+    if identity is None or identity.id not in office_hours_sessions[course_id].teaching_assistant_sessions:
+        abort(401)
+    teaching_assistant = office_hours_sessions[course_id].teaching_assistant_sessions[identity.id]
+
+    if request.method == 'PUT':  # TA adds self
+        session_dict = office_hours_sessions[course_id]._asdict()
+        session_dict['teaching_assistants'].append(teaching_assistant)
+        office_hours_sessions[course_id] = OfficeHours(**session_dict)
+        return '{}'
+
+    if len(filter(lambda x: x.id == teaching_assistant.id, office_hours_sessions[course_id].teaching_assistants)) == 0:
+        abort(400)
+
+    if request.method == 'DELETE':  # TA removes self
+        session_dict = office_hours_sessions[course_id]._asdict()
+        session_dict['teaching_assistants'].remove(teaching_assistant)
+        office_hours_sessions[course_id] = OfficeHours(**session_dict)
+        return '{}'
+    # TA updates own state. For now, just polling the queue.
     elif request.method == 'POST':
-        pass
+        student_json = request.get_json()
+        if student_json is None:
+            abort(400)
+        print(type(student_json))
+        if 'id' not in student_json:
+            abort(400)
+        if student_json['id'] not in office_hours_sessions[course_id].student_sessions:
+            abort(404)
+        student = office_hours_sessions[course_id].student_sessions[student_json['id']]
+        if student not in office_hours_sessions[course_id].students:
+            abort(404)
+        session_dict = office_hours_sessions[course_id]._asdict()
+        session_dict['students'].remove(student)
+        session_dict['teaching_assistants'].remove(teaching_assistant)
+        ta_dict = teaching_assistant._asdict()
+        ta_dict['helping'] = student._asdict()
+        teaching_assistant = TeachingAssistant(**ta_dict)
+        session_dict['teaching_assistant_sessions'][identity] = teaching_assistant
+        session_dict['teaching_assistants'].append(session_dict['teaching_assistant_sessions'][identity])
+        office_hours_sessions[course_id] = OfficeHours(**session_dict)
+        return '{}'
+
 
 if __name__ == "__main__":
     app.run()

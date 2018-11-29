@@ -32,10 +32,10 @@ TeachingAssistant = namedtuple(
 # }
 
 
-class UserType(Enum):
-    TeachingAssistant = "teaching_assistant",
-    Student = "student"
-# enum EUserType {
-#   TeachingAssistant = "teaching_assistant",
-#   Student = "student"
-# }
+# class UserType(Enum):
+#     TeachingAssistant = "teaching_assistant",
+#     Student = "student"
+# # enum EUserType {
+# #   TeachingAssistant = "teaching_assistant",
+# #   Student = "student"
+# # }
