@@ -16,18 +16,15 @@ def index(request, terms = ''):
 
 
 def course(request, name = ''):
-    # course = get_object_or_404(Class, name=name)
-    user = {'id': '', 'name': 'Emily'}
-
     # Get class state if exists, else do a search
     if request.method == 'GET':
         # query DB for the course
-        req = json.loads(request.body)
-        courseAbbreviation = req.courseAbbreviation
-        # get the lists of students and TAs, and make a dictionary from them
-        resp = state[courseAbbreviation]
-        resp['courseAbbreviation'] = courseAbbreviation
-        return HttpResponse(content=json.dumps(resp)) # return a JSON from the dict
+        course = get_object_or_404(Class, course_name=name)
+
+        # make course data serializable
+        course_dict = dict(course.__dict__)
+        course_dict.pop('_state', None)
+        return HttpResponse(content=json.dumps(course_dict)) # return a JSON from the dict
 
     # Modify session (queue) state based on ID of student/TA to join/leave
     elif request.method == 'POST':
