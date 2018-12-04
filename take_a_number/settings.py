@@ -124,7 +124,7 @@ STATIC_URL = '/static/'
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
-COR_ORIGIN_WHITELIST = ['https://takeanumber.netlify.com']
+CORS_ORIGIN_WHITELIST = ['https://takeanumber.netlify.com']
 CORS_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
