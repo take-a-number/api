@@ -12,7 +12,7 @@ import os
 import json
 
 
-from models import Course, OfficeHours, Student, TeachingAssistant
+from .models import Course, OfficeHours, Student, TeachingAssistant
 # from take_a_number.class_queue import ClassQueue, QueueStudent, QueueTA
 
 # app = Flask(__name__)
@@ -109,7 +109,7 @@ def course_office_hours(request, course_id):
 
     # A user has entered a join code, create a session if DNE.
     elif request.method == 'PUT':
-        json_req = request.get_json()
+        json_req = json.loads(request.body)
         if json_req is None:
             return HttpResponse(status=401)
         json_req: Dict[str, str] = json.loads(json_req)
@@ -180,17 +180,17 @@ def course_office_hours_teaching_assistants(request, course_id):
         office_hours_sessions[course_id] = OfficeHours(**session_dict)
         return HttpResponse('{}')
 
-    if len(filter(lambda x: x.id == teaching_assistant.id, office_hours_sessions[course_id].teaching_assistants)) == 0:
+    if len(list(filter(lambda x: x.id == teaching_assistant.id, office_hours_sessions[course_id].teaching_assistants))) == 0:
         return HttpResponse(status=400)
 
     if request.method == 'DELETE':  # TA removes self
         session_dict = office_hours_sessions[course_id]._asdict()
-        session_dict['teaching_assistants'].remove(teaching_assistant)
+        session_dict['teaching_assistants'].remove(list(filter(lambda x: x.id == teaching_assistant.id, office_hours_sessions[course_id].teaching_assistants))[0])
         office_hours_sessions[course_id] = OfficeHours(**session_dict)
         return HttpResponse('{}')
     # TA updates own state. For now, just polling the queue.
     elif request.method == 'POST':
-        student_json = request.get_json()
+        student_json = json.loads(request.body)
         if student_json is None:
             return HttpResponse(status=400)
         print(type(student_json))
@@ -203,7 +203,7 @@ def course_office_hours_teaching_assistants(request, course_id):
             return HttpResponse(status=404)
         session_dict = office_hours_sessions[course_id]._asdict()
         session_dict['students'].remove(student)
-        session_dict['teaching_assistants'].remove(teaching_assistant)
+        session_dict['teaching_assistants'].remove(list(filter(lambda x: x.id == teaching_assistant.id, office_hours_sessions[course_id].teaching_assistants))[0])
         ta_dict = teaching_assistant._asdict()
         ta_dict['helping'] = student._asdict()
         teaching_assistant = TeachingAssistant(**ta_dict)
