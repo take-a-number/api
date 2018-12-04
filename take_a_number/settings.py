@@ -50,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django_cookies_samesite.middleware.CookiesSameSite',
 ]
 
 ROOT_URLCONF = 'take_a_number.urls'
@@ -132,3 +133,4 @@ SESSION_COOKIE_SECURE = True
 #CSRF_USE_SESSIONS = True
 #CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SAMESITE = None
