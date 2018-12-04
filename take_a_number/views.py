@@ -6,11 +6,14 @@ from django.http import HttpResponse
 from typing import Dict
 import random
 import uuid
+from uuid import UUID
+
 import os
 import json
 
+
 from models import Course, OfficeHours, Student, TeachingAssistant
-from take_a_number.class_queue import ClassQueue, QueueStudent, QueueTA
+# from take_a_number.class_queue import ClassQueue, QueueStudent, QueueTA
 
 # app = Flask(__name__)
 # CORS(app, supports_credentials=True)
@@ -65,17 +68,19 @@ def get_identity(request, course_id) -> str:
 
 
 def course_office_hours_identity(request, course_id):
-    identity = get_identity(course_id)
+    course_id = UUID(course_id)
+    identity = get_identity(request, course_id)
     if identity is None:
         return HttpResponse(status=404)
-    return json.dumps(identity._asdict())
+    return HttpResponse(json.dumps(identity._asdict()))
 
 
 def courses_list(request):
-    return json.dumps(list(map(lambda x: x._asdict(), courses.values())))
+    return HttpResponse(json.dumps(list(map(lambda x: x._asdict(), courses.values())), cls=UUIDEncoder))
 
 
 def course_office_hours(request, course_id):
+    course_id = UUID(course_id)
     if course_id not in courses:
         return HttpResponse(status=404)
     if course_id not in office_hours_sessions:
@@ -90,13 +95,13 @@ def course_office_hours(request, course_id):
                        'teachingAssistants': list(map(lambda x: x._asdict(), office_hours.teaching_assistants)),
                        'students': list(map(lambda x: x._asdict(), office_hours.students)),
                        }
-        identity = get_identity(course_id)
+        identity = get_identity(request, course_id)
         if identity is None:
-            return json.dumps(officeHours)
+            return HttpResponse(json.dumps(officeHours))
         if identity.id in office_hours.teaching_assistant_sessions:
             print(office_hours.student_join_code)
             officeHours['studentJoinCode'] = office_hours.student_join_code
-        return json.dumps(officeHours)
+        return HttpResponse(json.dumps(officeHours))
 
     # Modify the course office hours session. Does nothing right now.
     elif request.method == 'POST':
@@ -111,17 +116,17 @@ def course_office_hours(request, course_id):
         # TODO Use constant time comparison here
         if 'joinCode' in json_req and 'name' in json_req:
             if json_req['joinCode'] == office_hours_sessions[course_id].student_join_code:
-                new_uuid = uuid.uuid4().hex
+                new_uuid = str(uuid.uuid4())
                 office_hours_sessions[course_id].student_sessions[new_uuid] = Student(
                     json_req['name'], new_uuid, "student")
                 request.session['whoami'] = new_uuid
-                return "{}"
+                return HttpResponse("{}")
             elif json_req['joinCode'] == courses[course_id].teaching_assistant_join_code:
-                new_uuid = uuid.uuid4().hex
+                new_uuid = str(uuid.uuid4())
                 office_hours_sessions[course_id].teaching_assistant_sessions[new_uuid] = TeachingAssistant(
                     json_req['name'], new_uuid, "teaching_assistant", None)
                 request.session['whoami'] = new_uuid
-                return "{}"
+                return HttpResponse("{}")
             else:
                 return HttpResponse(status=401)
         else:
@@ -134,9 +139,10 @@ def course_office_hours(request, course_id):
 
 
 def course_office_hours_queue(request, course_id):
+    course_id = UUID(course_id)
     if course_id not in courses or course_id not in office_hours_sessions:
         return HttpResponse(status=404)
-    identity = get_identity(course_id)
+    identity = get_identity(request, course_id)
     if identity is None or identity.id not in office_hours_sessions[course_id].student_sessions:
         return HttpResponse(status=401)
     student = office_hours_sessions[course_id].student_sessions[identity.id]
@@ -145,7 +151,7 @@ def course_office_hours_queue(request, course_id):
         session_dict = office_hours_sessions[course_id]._asdict()
         session_dict['students'].append(student)
         office_hours_sessions[course_id] = OfficeHours(**session_dict)
-        return '{}'
+        return HttpResponse('{}')
 
     if student not in office_hours_sessions[course_id].students:
         return HttpResponse(status=400)
@@ -154,15 +160,16 @@ def course_office_hours_queue(request, course_id):
         session_dict = office_hours_sessions[course_id]._asdict()
         session_dict['students'].remove(student)
         office_hours_sessions[course_id] = OfficeHours(**session_dict)
-        return '{}'
+        return HttpResponse('{}')
     elif request.method == 'POST':  # student updates own state on queue. No-op for now
         pass
 
 
 def course_office_hours_teaching_assistants(request, course_id):
+    course_id = UUID(course_id)
     if course_id not in courses or course_id not in office_hours_sessions:
         return HttpResponse(status=404)
-    identity = get_identity(course_id)
+    identity = get_identity(request, course_id)
     if identity is None or identity.id not in office_hours_sessions[course_id].teaching_assistant_sessions:
         return HttpResponse(status=401)
     teaching_assistant = office_hours_sessions[course_id].teaching_assistant_sessions[identity.id]
@@ -171,7 +178,7 @@ def course_office_hours_teaching_assistants(request, course_id):
         session_dict = office_hours_sessions[course_id]._asdict()
         session_dict['teaching_assistants'].append(teaching_assistant)
         office_hours_sessions[course_id] = OfficeHours(**session_dict)
-        return '{}'
+        return HttpResponse('{}')
 
     if len(filter(lambda x: x.id == teaching_assistant.id, office_hours_sessions[course_id].teaching_assistants)) == 0:
         return HttpResponse(status=400)
@@ -180,7 +187,7 @@ def course_office_hours_teaching_assistants(request, course_id):
         session_dict = office_hours_sessions[course_id]._asdict()
         session_dict['teaching_assistants'].remove(teaching_assistant)
         office_hours_sessions[course_id] = OfficeHours(**session_dict)
-        return '{}'
+        return HttpResponse('{}')
     # TA updates own state. For now, just polling the queue.
     elif request.method == 'POST':
         student_json = request.get_json()
@@ -203,4 +210,12 @@ def course_office_hours_teaching_assistants(request, course_id):
         session_dict['teaching_assistant_sessions'][identity] = teaching_assistant
         session_dict['teaching_assistants'].append(session_dict['teaching_assistant_sessions'][identity])
         office_hours_sessions[course_id] = OfficeHours(**session_dict)
-        return '{}'
+        return HttpResponse('{}')
+
+# from https://stackoverflow.com/questions/36588126/uuid-is-not-json-serializable
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
