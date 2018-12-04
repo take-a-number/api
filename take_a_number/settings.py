@@ -25,7 +25,7 @@ SECRET_KEY = os.urandom(50)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['takeanumber-api.herokuapp.com']
+ALLOWED_HOSTS = ['takeanumber-api.herokuapp.com', 'localhost']
 
 
 # Application definition
@@ -50,7 +50,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django_cookies_samesite.middleware.CookiesSameSite',
 ]
 
 ROOT_URLCONF = 'take_a_number.urls'

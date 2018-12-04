@@ -14,4 +14,3 @@ uuid==1.30
 wrapt==1.10.11
 gunicorn
 django-heroku
-django-cookies-samesite==0.2.0
