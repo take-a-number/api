@@ -1,6 +1,7 @@
 from django.test import TestCase
-from take_a_number.utils.class_queue import ClassQueue, QueueMember
-'''
+from take_a_number.utils.class_queue import ClassQueue, QueueMember, QueueTA
+
+
 class QueueTest(TestCase):
     def create_member1(self, name="Name1", id=1):
         return QueueMember(name, id)
@@ -87,4 +88,3 @@ class QueueTest(TestCase):
         self.assertEqual(True, q.hasStudents())
         self.assertEqual(False, q.hasTas())
 
-'''
