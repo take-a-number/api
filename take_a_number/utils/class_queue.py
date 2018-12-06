@@ -40,7 +40,7 @@ class ClassQueue:
 
     # Add a TA to the class (object of type QueueTA)
     def addTA(self, ta):
-        self.students.append(ta)
+        self.tas.append(ta)
 
     # Remove a TA from the class by ID
     def removeTA(self, taId):
