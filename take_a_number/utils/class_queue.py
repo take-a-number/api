@@ -46,8 +46,8 @@ class ClassQueue:
     def removeTA(self, taId):
         i = 0
         while i < len(self.tas):
-            if self.students[i].id == taId:
-                return self.students.pop(i)
+            if self.tas[i].id == taId:
+                return self.tas.pop(i)
             i += 1
         return -1  # did not find the TA
 

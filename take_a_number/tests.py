@@ -1,5 +1,9 @@
 from django.test import TestCase
 from take_a_number.utils.class_queue import ClassQueue, QueueMember, QueueTA
+from take_a_number.views import random_join_code
+from typing import Dict
+from .models import Course, OfficeHours, Student, TeachingAssistant
+import uuid
 
 
 class QueueTest(TestCase):
@@ -21,6 +25,7 @@ class QueueTest(TestCase):
     def create_queue(self):
         return ClassQueue()
 
+    # enqueue and dequeue students to queue
     def test_enqueue_dequeue(self):
         q = self.create_queue()
         q.enqueue(1)
@@ -30,6 +35,7 @@ class QueueTest(TestCase):
         self.assertEqual(2, q.dequeue())
         self.assertEqual(3, q.dequeue())
 
+    # queue accessors
     def test_getters(self):
         q = self.create_queue()
         self.assertEqual(0, q.size())
@@ -39,6 +45,7 @@ class QueueTest(TestCase):
         self.assertEqual([], q.getTas())
         self.assertEqual([], q.getStudents())
 
+    # add students and tas to a queue
     def test_add(self):
         q = self.create_queue()
         self.assertEqual(True, q.isEmpty())
@@ -54,6 +61,7 @@ class QueueTest(TestCase):
         self.assertEqual(False, q.isEmpty())
         self.assertEqual(1, q.size())
 
+    # remove students from a queue by id
     def test_remove(self):
         q = self.create_queue()
         self.assertEqual(False, q.hasTas())
@@ -73,6 +81,7 @@ class QueueTest(TestCase):
         self.assertEqual(0, q.size())
         self.assertEqual(True, q.isEmpty())
 
+    # add students to a queue and check positions
     def test_status(self):
         q = self.create_queue()
         member1 = self.create_member1()
@@ -88,3 +97,13 @@ class QueueTest(TestCase):
         self.assertEqual(True, q.hasStudents())
         self.assertEqual(False, q.hasTas())
 
+class JoinCodeTest(TestCase):
+    def test_jc(self):
+        code1 = random_join_code()
+        valid = True
+        for elem in code1:
+            if not elem.isdigit() and not elem.isupper():
+                valid = False
+        self.assertEqual(True, valid)
+
+mock_oh_sessions: Dict[uuid.UUID, OfficeHours] = {}

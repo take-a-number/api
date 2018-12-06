@@ -8,7 +8,6 @@ import random
 import uuid
 from uuid import UUID
 
-import os
 import json
 
 
@@ -46,6 +45,8 @@ courses: Dict[uuid.UUID, Course] = {uuid.UUID(hex='43eaa6d8-5def-4567-a50c-293dc
 #     id: '7c3dc539-6b47-4772-a9a9-5384c0e420b9',
 #   },
 
+# Holds the state of the running application
+# Maps from the ID of a course (provided by uuid) to relevant information
 office_hours_sessions: Dict[uuid.UUID, OfficeHours] = {}
 
 
@@ -55,13 +56,18 @@ def random_join_code() -> str:
 
 
 def get_identity(request, course_id) -> str:
+    # check whether the course exists or has active office hours
     if course_id not in courses or course_id not in office_hours_sessions:
         return None
+    # obtain the OfficeHours model based on course_id
     office_hours = office_hours_sessions[course_id]
+    # cookie used to track the browser session
     if 'whoami' in request.session:
         whoami: str = request.session['whoami']
+        # user is a student
         if whoami in office_hours.student_sessions:
             return office_hours.student_sessions[whoami]
+        # user is a ta; cannot be student and ta of same class
         elif whoami in office_hours.teaching_assistant_sessions:
             return office_hours.teaching_assistant_sessions[whoami]
     return None
@@ -70,6 +76,7 @@ def get_identity(request, course_id) -> str:
 def course_office_hours_identity(request, course_id):
     course_id = UUID(course_id)
     identity = get_identity(request, course_id)
+    # could not find information on desired course
     if identity is None:
         return HttpResponse(status=404)
     return HttpResponse(json.dumps(identity._asdict()))
