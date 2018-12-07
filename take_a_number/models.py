@@ -1,4 +1,3 @@
-from django.db import models
 from collections import namedtuple
 from enum import Enum
 
