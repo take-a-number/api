@@ -200,7 +200,7 @@ def course_office_hours_teaching_assistants(request, course_id):
     if identity is None or identity.id not in office_hours_sessions[course_id].teaching_assistant_sessions:
         return HttpResponse(status=401)
     teaching_assistant = office_hours_sessions[course_id].teaching_assistant_sessions[identity.id]
-    # # some error occurred, id is in the session but the ta is not
+    # some error occurred, id is in the session but the ta is not
     # if teaching_assistant not in office_hours_sessions[course_id].teaching_assistants:
     #     return HttpResponse(status=400)
 
@@ -246,7 +246,7 @@ def course_office_hours_teaching_assistants(request, course_id):
         teaching_assistant = TeachingAssistant(**ta_dict)
         # modify state of course using modified data on teaching assistant
         session_dict['teaching_assistant_sessions'][identity] = teaching_assistant
-        session_dict['teaching_assistants'].append(session_dict['teaching_assistant_sessions'][identity])
+        session_dict['teaching_assistants'].append(teaching_assistant)
         # write back to overall state of application
         office_hours_sessions[course_id] = OfficeHours(**session_dict)
         return HttpResponse('{}')
