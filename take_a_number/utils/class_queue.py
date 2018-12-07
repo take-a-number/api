@@ -5,6 +5,13 @@ class QueueMember:
         self.id = id
         self.type = type
 
+    def asDict(self):
+        return {
+            'name': self.name,
+            'id': self.id,
+            'type': self.type
+        }
+
 # TAs for each class, which will also be held in a ClassQueue object
 class QueueTA:
     def __init__(self, name, id, type = None, helping = None):
@@ -27,6 +34,14 @@ class QueueTA:
 
     def startHelping(self, helping):
         self.helping = helping
+
+    def asDict(self):
+        return {
+            'name': self.name,
+            'id': self.id,
+            'type': self.type,
+            'helping': self.helping.asDict
+        }
 
 
 # Underlying queue which which be created for each class
