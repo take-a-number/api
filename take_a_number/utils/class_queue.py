@@ -1,23 +1,55 @@
 # Objects which will go on the queue, holding the person's name and a unique ID
 class QueueMember:
-    def __init__(self, name, id):
+    def __init__(self, name, id, type):
         self.name = name
         self.id = id
+        self.type = type
 
+# TAs for each class, which will also be held in a ClassQueue object
 class QueueTA:
-    def __init__(self, name, id):
+    def __init__(self, name, id, type = None, helping = None):
         self.name = name
         self.id = id
+        self.type = type
+        self.helping = helping
+
+    def getHelping(self):
+        return self.helping
+
+    def isHelping(self, rhs):
+        return self.helping == rhs
+
+    def isHelpingSomeone(self):
+        return self.helping != None
+
+    def stopHelping(self):
+        self.helping = None
+
+    def startHelping(self, helping):
+        self.helping = helping
+
 
 # Underlying queue which which be created for each class
 class ClassQueue:
-    def __init__(self):
-        self.students = []
-        self.tas = []
+    # TODO remove default args?
+    def __init__(self, courseAbbrev = None, studentJoinCode = None, students = [],
+                 tas = [], studentSessions = {}, taSessions = {}):
+        self.courseAbbreviation = courseAbbrev
+        self.studentJoinCode = studentJoinCode
+        self.students = students
+        self.tas = tas
+        self.studentSessions = studentSessions # will hold map of QueueMember
+        self.taSessions = taSessions # will hold map of QueueTA
 
     # Check whether the ClassQueue is empty
     def isEmpty(self):
         return self.students == []
+
+    def studentCount(self):
+        return len(self.students)
+
+    def taCount(self):
+        return len(self.tas)
 
     # Check whether the ClassQueue has any TAs
     def hasTas(self):
@@ -31,6 +63,18 @@ class ClassQueue:
 
     def getStudents(self):
         return self.students
+
+    def getStudentSessionIds(self):
+        ret = []
+        for student in self.studentSessions:
+            ret.append(student.id)
+        return ret
+
+    def getTaSessionIds(self):
+        ret = []
+        for ta in self.taSessions:
+            ret.append(ta.id)
+        return ret
 
     def asDict(self):
         resp = {}

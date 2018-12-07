@@ -106,4 +106,5 @@ class JoinCodeTest(TestCase):
                 valid = False
         self.assertEqual(True, valid)
 
-mock_oh_sessions: Dict[uuid.UUID, OfficeHours] = {}
+# TODO add tests for the views.py logic
+#mock_oh_sessions: Dict[uuid.UUID, OfficeHours] = {}
