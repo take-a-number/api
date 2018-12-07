@@ -36,11 +36,15 @@ class QueueTA:
         self.helping = helping
 
     def asDict(self):
+        if self.helping == None:
+            helpingDict = None
+        else:
+            helpingDict = self.helping.asDict()
         return {
             'name': self.name,
             'id': self.id,
             'type': self.type,
-            'helping': self.helping.asDict
+            'helping': helpingDict
         }
 
 

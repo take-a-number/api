@@ -217,6 +217,7 @@ def course_office_hours_teaching_assistants(request, course_id):
         session_dict.addTA(teaching_assistant)
         office_hours_state[course_id] = session_dict
         return HttpResponse('{}')
+
     # if there are no active tas for this session
     # if len(list(filter(lambda x: x.id == teaching_assistant.id, office_hours_state[course_id].tas))) == 0:
     if office_hours_state[course_id].taCount() == 0:

@@ -104,6 +104,13 @@ class QueueTest(TestCase):
         self.assertEqual(True, q.hasStudents())
         self.assertEqual(False, q.hasTas())
 
+    def test_dict(self):
+        member1 = self.create_member1()
+        ta1 = self.create_ta1()
+        self.assertEqual(member1.asDict(), {'name': 'Name1', 'id': 1, "type": None})
+        self.assertEqual(ta1.asDict(), {'name': 'TA1', 'id': 11, 'type': None, 'helping': None})
+
+
 class JoinCodeTest(TestCase):
     def test_jc(self):
         code1 = random_join_code()
@@ -114,4 +121,4 @@ class JoinCodeTest(TestCase):
         self.assertEqual(True, valid)
 
 # TODO add tests for the views.py logic
-#mock_oh_sessions: Dict[uuid.UUID, OfficeHours] = {}
+#class ViewsTest(TestCase):
