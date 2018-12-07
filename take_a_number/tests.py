@@ -38,15 +38,19 @@ class QueueTest(TestCase):
         self.assertEqual(member2.id, q.dequeue().id)
         self.assertEqual(member3.id, q.dequeue().id)
 
-    # queue accessors
+    # queue access/default fields
     def test_getters(self):
-        q = ClassQueue()
+        q = self.create_queue()
         self.assertEqual(0, q.size())
         self.assertEqual(True, q.isEmpty())
         self.assertEqual(False, q.hasTas())
         self.assertEqual(False, q.hasStudents())
-        self.assertEqual([], q.getTas())
-        self.assertEqual([], q.getStudents())
+        self.assertEqual([], q.tas)
+        self.assertEqual([], q.students)
+        self.assertEqual({}, q.studentSessions)
+        self.assertEqual({}, q.taSessions)
+        self.assertEqual(None, q.courseAbbreviation)
+        self.assertEqual(None, q.studentJoinCode)
 
     # add students and tas to a queue
     def test_add(self):

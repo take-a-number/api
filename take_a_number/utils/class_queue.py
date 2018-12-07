@@ -31,6 +31,7 @@ class QueueTA:
 
 # Underlying queue which which be created for each class
 class ClassQueue:
+    # default arguments must be "None" to fix issue with mutable default args
     def __init__(self, courseAbbrev = None, studentJoinCode = None, students = None,
                  tas = None, studentSessions = None, taSessions = None):
         # uuid of the course, which the frontend is aware of
