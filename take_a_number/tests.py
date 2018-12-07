@@ -28,16 +28,19 @@ class QueueTest(TestCase):
     # enqueue and dequeue students to queue
     def test_enqueue_dequeue(self):
         q = self.create_queue()
-        q.enqueue(1)
-        q.enqueue(2)
-        q.enqueue(3)
-        self.assertEqual(1, q.dequeue())
-        self.assertEqual(2, q.dequeue())
-        self.assertEqual(3, q.dequeue())
+        member1 = self.create_member1()
+        member2 = self.create_member2()
+        member3 = self.create_member3()
+        q.enqueue(member1)
+        q.enqueue(member2)
+        q.enqueue(member3)
+        self.assertEqual(member1.id, q.dequeue().id)
+        self.assertEqual(member2.id, q.dequeue().id)
+        self.assertEqual(member3.id, q.dequeue().id)
 
     # queue accessors
     def test_getters(self):
-        q = self.create_queue()
+        q = ClassQueue()
         self.assertEqual(0, q.size())
         self.assertEqual(True, q.isEmpty())
         self.assertEqual(False, q.hasTas())
