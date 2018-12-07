@@ -31,23 +31,30 @@ class QueueTA:
 
 # Underlying queue which which be created for each class
 class ClassQueue:
-    # TODO remove default args?
-    def __init__(self, courseAbbrev = None, studentJoinCode = None, students = [],
-                 tas = [], studentSessions = {}, taSessions = {}):
+    def __init__(self, courseAbbrev = None, studentJoinCode = None, students = None,
+                 tas = None, studentSessions = None, taSessions = None):
+        # uuid of the course, which the frontend is aware of
         self.courseAbbreviation = courseAbbrev
+        # student join code
         self.studentJoinCode = studentJoinCode
-        self.students = students
-        self.tas = tas
-        self.studentSessions = studentSessions # will hold map of QueueMember
-        self.taSessions = taSessions # will hold map of QueueTA
+        if students is None:
+            self.students = [] # list (queue) of students
+        if tas is None:
+            self.tas = [] # list of tas
+        if studentSessions is None:
+            self.studentSessions = {} # will hold map of QueueMember
+        if taSessions is None:
+            self.taSessions = {} # will hold map of QueueTA
 
     # Check whether the ClassQueue is empty
     def isEmpty(self):
         return self.students == []
 
+    # get the number of students
     def studentCount(self):
         return len(self.students)
 
+    # get the number of tas
     def taCount(self):
         return len(self.tas)
 
@@ -55,14 +62,8 @@ class ClassQueue:
     def hasTas(self):
         return self.tas != []
 
-    def getTas(self):
-        return self.tas
-
     def hasStudents(self):
         return self.students != []
-
-    def getStudents(self):
-        return self.students
 
     def getStudentSessionIds(self):
         ret = []
@@ -78,8 +79,8 @@ class ClassQueue:
 
     def asDict(self):
         resp = {}
-        resp['students'] = self.getStudents()
-        resp['teachingAssistants'] = self.getTas()
+        resp['students'] = self.students
+        resp['teachingAssistants'] = self.tas
         return resp
 
     # Add a TA to the class (object of type QueueTA)
