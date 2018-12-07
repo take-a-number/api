@@ -246,7 +246,7 @@ def course_office_hours_teaching_assistants(request, course_id):
         teaching_assistant = TeachingAssistant(**ta_dict)
         # modify state of course using modified data on teaching assistant
         session_dict['teaching_assistant_sessions'][identity] = teaching_assistant
-        session_dict['teaching_assistants'].append(teaching_assistant)
+        session_dict['teaching_assistants'].append(session_dict['teaching_assistant_sessions'][identity])
         # write back to overall state of application
         office_hours_sessions[course_id] = OfficeHours(**session_dict)
         return HttpResponse('{}')
