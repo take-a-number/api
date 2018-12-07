@@ -67,7 +67,7 @@ def get_identity(request, course_id):
     office_hours = office_hours_state[course_id]
     # cookie used to track the browser session
     if 'whoami' in request.session:
-        whoami: str = request.session['whoami']
+        whoami: str = request.session['whoami'] # get the uuid of the session
         # user is a student
         if whoami in office_hours.studentSessions:
             return office_hours.studentSessions[whoami]
@@ -106,8 +106,8 @@ def course_office_hours(request, course_id):
         course = courses[course_id]
         # return the course, tas, and students
         officeHours = {'courseAbbreviation': course.abbreviation,
-                       'teachingAssistants': list(map(lambda x: x._asdict(), office_hours.tas)),
-                       'students': list(map(lambda x: x._asdict(), office_hours.students)),
+                       'teachingAssistants': office_hours.tas, #list(map(lambda x: x._asdict(), office_hours.tas)),
+                       'students': office_hours.students #list(map(lambda x: x._asdict(), office_hours.students)),
                        }
         identity = get_identity(request, course_id)
         if identity is None:
