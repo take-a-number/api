@@ -248,6 +248,7 @@ def course_office_hours_teaching_assistants(request, course_id):
         session_dict.removeStudent(student.id)
         # remove ta from list, modify to add a student (being helped)
         session_dict.removeTA(teaching_assistant.id)
+        # TODO add code to directly start helping another student to QueueTA
         teaching_assistant.startHelping(student)
         # modify state of course using modified data on teaching assistant
         session_dict.taSessions[identity] = teaching_assistant

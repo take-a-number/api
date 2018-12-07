@@ -1,6 +1,6 @@
 # Objects which will go on the queue, holding the person's name and a unique ID
 class QueueMember:
-    def __init__(self, name, id, type):
+    def __init__(self, name, id, type = None):
         self.name = name
         self.id = id
         self.type = type
@@ -11,7 +11,7 @@ class QueueTA:
         self.name = name
         self.id = id
         self.type = type
-        self.helping = helping
+        self.helping = helping # helping contains the QueueMember being helped
 
     def getHelping(self):
         return self.helping
