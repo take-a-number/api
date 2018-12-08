@@ -124,6 +124,12 @@ def course_office_hours(request, course_id):
         return HttpResponse(status=404)
     # if the course has no active session, create an entry for it
     if course_id not in office_hours_state:
+        return HttpResponse(json.dumps(
+            {'courseAbbreviation': 'CS3251',
+             'teachingAssistants': [],
+             'students': [],
+             }
+        ))
         office_hours_state[course_id] = ClassQueue(
             course_id, random_join_code(), [], [], {}, {})
     # Get a course's office hours
@@ -137,12 +143,6 @@ def course_office_hours(request, course_id):
             'teachingAssistants': list(map(lambda x: x.asDict(), office_hours.tas)), #list(map(lambda x: x._asdict(), office_hours.tas)),
             'students': list(map(lambda x: x.asDict(), office_hours.students)) #list(map(lambda x: x._asdict(), office_hours.students)),
         }
-        return HttpResponse(json.dumps(
-            {'courseAbbreviation': 'CS3251',
-             'teachingAssistants': [],
-             'students': [],
-             }
-        ))
         identity = get_identity(request, course_id)
         if identity is None:
             return HttpResponse(json.dumps(officeHours))
