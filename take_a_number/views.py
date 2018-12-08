@@ -124,14 +124,14 @@ def course_office_hours(request, course_id):
         return HttpResponse(status=404)
     # if the course has no active session, create an entry for it
     if course_id not in office_hours_state:
+        office_hours_state[course_id] = ClassQueue(
+            course_id, random_join_code(), [], [], {}, {})
         return HttpResponse(json.dumps(
             {'courseAbbreviation': 'CS3251',
              'teachingAssistants': [],
              'students': [],
              }
         ))
-        office_hours_state[course_id] = ClassQueue(
-            course_id, random_join_code(), [], [], {}, {})
     # Get a course's office hours
     if request.method == 'GET':
         # return a JSON from the dict
