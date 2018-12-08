@@ -93,7 +93,8 @@ def courses_handler(request):
         json_req = json.loads(request.body)
         if json_req is None:
             return HttpResponseBadRequest()
-        try:
+        json_req: Dict[str, str] = json.loads(json_req)
+        try: # validate form fields using a try-except
             new_uuid = str(uuid.uuid4())
             description = json_req['description']
             abbreviation = json_req['abbreviation']
