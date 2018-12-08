@@ -83,7 +83,7 @@ def course_office_hours_identity(request, course_id):
     # could not find information on desired course
     if identity is None:
         return HttpResponse(status=404)
-    return HttpResponse(json.dumps(identity._asdict()))
+    return HttpResponse(json.dumps(identity.asDict()))
 
 
 def courses_handler(request):
@@ -100,31 +100,6 @@ def courses_handler(request):
 
 
 def course_office_hours(request, course_id):
-    # course_id = UUID(course_id)
-    # if course_id not in courses:
-    #     return HttpResponse(status=404)
-    # if course_id not in office_hours_sessions:
-    #     office_hours_sessions[course_id] = OfficeHours(
-    #         course_id, random_join_code(), [], [], {}, {})
-    # # Get a course's office hours
-    # if request.method == 'GET':
-    #     # return a JSON from the dict
-    #     office_hours = office_hours_sessions[course_id]
-    #     course = courses[course_id]
-    #     officeHours = {'courseAbbreviation': course.abbreviation,
-    #                    'teachingAssistants': list(map(lambda x: x._asdict(), office_hours.teaching_assistants)),
-    #                    'students': list(map(lambda x: x._asdict(), office_hours.students)),
-    #                    }
-    #     identity = get_identity(request, course_id)
-    #     if identity is None:
-    #         return HttpResponse(json.dumps(officeHours))
-    #     if identity.id in office_hours.teaching_assistant_sessions:
-    #         print(office_hours.student_join_code)
-    #         officeHours['studentJoinCode'] = office_hours.student_join_code
-    #     return HttpResponse(json.dumps(officeHours))
-
-    # @@@@@ old code above this line
-
     course_id = UUID(course_id)
     # check whether the course exists
     if course_id not in courses:
@@ -133,12 +108,6 @@ def course_office_hours(request, course_id):
     if course_id not in office_hours_state:
         office_hours_state[course_id] = ClassQueue(
             course_id, random_join_code(), [], [], {}, {})
-        return HttpResponse(json.dumps(
-            {'courseAbbreviation': 'CS3251',
-             'teachingAssistants': [],
-             'students': [],
-             }
-        ))
     # Get a course's office hours
     if request.method == 'GET':
         # return a JSON from the dict
