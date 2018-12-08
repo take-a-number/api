@@ -48,7 +48,7 @@ courses: Dict[uuid.UUID, Course] = {uuid.UUID(hex='43eaa6d8-5def-4567-a50c-293dc
 
 # Holds the state of the running application
 # Maps from the ID of a course (provided by uuid) to relevant information
-office_hours_sessions: Dict[uuid.UUID, OfficeHours] = {}
+#office_hours_sessions: Dict[uuid.UUID, OfficeHours] = {}
 
 office_hours_state: Dict[uuid.UUID, ClassQueue] = {}
 
@@ -99,14 +99,14 @@ def courses_handler(request):
             description = json_req['description']
             abbreviation = json_req['abbreviation']
             # TODO use the email field for something meaningful
-            courses[new_uuid] = Course(abbreviation, description, new_uuid, random_join_code())
+            courses[uuid.uuid.UUID(hex=str(new_uuid))] = Course(abbreviation, description, new_uuid, random_join_code())
         except KeyError: # some fields were not present
             return HttpResponseBadRequest()
         return HttpResponse(json.dumps(new_uuid))
 
 
 def course_office_hours(request, course_id):
-    course_id = UUID(course_id)
+    course_id = UUID(hex=course_id)
     # check whether the course exists
     if course_id not in courses:
         return HttpResponse(status=404)
@@ -122,9 +122,7 @@ def course_office_hours(request, course_id):
         # return the course, tas, and students
         officeHours = {
             'courseAbbreviation': course.abbreviation,
-            # list(map(lambda x: x._asdict(), office_hours.tas)),
             'teachingAssistants': list(map(lambda x: x.asDict(), office_hours.tas)),
-            # list(map(lambda x: x._asdict(), office_hours.students)),
             'students': list(map(lambda x: x.asDict(), office_hours.students))
         }
         identity = get_identity(request, course_id)
