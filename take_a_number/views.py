@@ -99,7 +99,7 @@ def courses_handler(request):
             description = json_req['description']
             abbreviation = json_req['abbreviation']
             # TODO use the email field for something meaningful
-            courses[uuid.uuid.UUID(hex=str(new_uuid))] = Course(abbreviation, description, new_uuid, random_join_code())
+            courses[uuid.UUID(hex=str(new_uuid))] = Course(abbreviation, description, new_uuid, random_join_code())
         except KeyError: # some fields were not present
             return HttpResponseBadRequest()
         return HttpResponse(json.dumps(new_uuid))
