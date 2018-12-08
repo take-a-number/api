@@ -87,16 +87,21 @@ def course_office_hours_identity(request, course_id):
 
 
 def courses_handler(request):
-    if request.method == 'GET':   # Get all coursers as a json
+    if request.method == 'GET':   # Get all courses as a json
         return HttpResponse(json.dumps(list(map(lambda x: x._asdict(), courses.values())), cls=UUIDEncoder))
     elif request.method == 'PUT':  # Create a course
         json_req = json.loads(request.body)
         if json_req is None:
             return HttpResponseBadRequest()
-        # Verify form fields are correct
-        # Add to dict
-        # Return json.dumps(new_course_uuid)
-        return HttpResponse(content='')
+        try:
+            new_uuid = str(uuid.uuid4())
+            description = json_req['description']
+            abbreviation = json_req['abbreviation']
+            # TODO use the email field for something meaningful
+            courses[new_uuid] = Course(abbreviation, description, new_uuid, random_join_code())
+        except KeyError: # some fields were not present
+            return HttpResponseBadRequest()
+        return HttpResponse(json.dumps(new_uuid))
 
 
 def course_office_hours(request, course_id):
@@ -163,13 +168,11 @@ def course_office_hours(request, course_id):
             # one of the fields was missing in the request
             return HttpResponse(status=400)
 
-    # A user has left office hours; does not change anything yet
+    # TODO A user has left office hours; does not change anything yet
     elif request.method == 'DELETE':
         # TODO grab user info from session
         req: Dict[str, str] = json.loads(request.get_json())
         return HttpResponse(status=401)
-
-# do operations on the list of students
 
 
 def course_office_hours_queue(request, course_id):
@@ -180,13 +183,14 @@ def course_office_hours_queue(request, course_id):
     identity = get_identity(request, course_id)
     if identity is None or identity.id not in office_hours_state[course_id].studentSessions:
         return HttpResponse(status=401)
+    # "student" is an object of type QueueMember
     student = office_hours_state[course_id].studentSessions[identity.id]
 
     # student adds self to queue
     if request.method == 'PUT':
         session_dict = office_hours_state[course_id]
         # append to end of previous list; write the result back
-        session_dict.enqueue(student)  # TODO look at what "student" is
+        session_dict.enqueue(student)
         # rewrite state with modified data
         office_hours_state[course_id] = session_dict
         return HttpResponse('{}')
