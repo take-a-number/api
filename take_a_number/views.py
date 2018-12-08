@@ -127,18 +127,17 @@ def course_office_hours(request, course_id):
         office_hours_state[course_id] = ClassQueue(
             course_id, random_join_code(), [], [], {}, {})
     # Get a course's office hours
-    return HttpResponse(json.dumps(
-        {'courseAbbreviation': 'CS3251',
-         'teachingAssistants': [],
-         'students': [],
-         }
-    ))
-
     if request.method == 'GET':
         # return a JSON from the dict
         office_hours = office_hours_state[course_id]
         course = courses[course_id]
         # return the course, tas, and students
+        return HttpResponse(json.dumps(
+            {'courseAbbreviation': 'CS3251',
+             'teachingAssistants': [],
+             'students': [],
+             }
+        ))
         officeHours = {
             'courseAbbreviation': course.abbreviation,
             'teachingAssistants': list(map(lambda x: x.asDict(), office_hours.tas)), #list(map(lambda x: x._asdict(), office_hours.tas)),
