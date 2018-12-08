@@ -132,17 +132,17 @@ def course_office_hours(request, course_id):
         office_hours = office_hours_state[course_id]
         course = courses[course_id]
         # return the course, tas, and students
+        officeHours = {
+            'courseAbbreviation': course.abbreviation,
+            'teachingAssistants': list(map(lambda x: x.asDict(), office_hours.tas)), #list(map(lambda x: x._asdict(), office_hours.tas)),
+            'students': list(map(lambda x: x.asDict(), office_hours.students)) #list(map(lambda x: x._asdict(), office_hours.students)),
+        }
         return HttpResponse(json.dumps(
             {'courseAbbreviation': 'CS3251',
              'teachingAssistants': [],
              'students': [],
              }
         ))
-        officeHours = {
-            'courseAbbreviation': course.abbreviation,
-            'teachingAssistants': list(map(lambda x: x.asDict(), office_hours.tas)), #list(map(lambda x: x._asdict(), office_hours.tas)),
-            'students': list(map(lambda x: x.asDict(), office_hours.students)) #list(map(lambda x: x._asdict(), office_hours.students)),
-        }
         identity = get_identity(request, course_id)
         if identity is None:
             return HttpResponse(json.dumps(officeHours))
