@@ -11,7 +11,7 @@ from uuid import UUID
 import json
 
 
-from .models import Course#, OfficeHours, Student, TeachingAssistant
+from .models import Course, OfficeHours, Student, TeachingAssistant
 from .utils.class_queue import ClassQueue, QueueMember, QueueTA
 
 # TODO remove this block of code
@@ -48,7 +48,7 @@ courses: Dict[uuid.UUID, Course] = {uuid.UUID(hex='43eaa6d8-5def-4567-a50c-293dc
 
 # Holds the state of the running application
 # Maps from the ID of a course (provided by uuid) to relevant information
-#office_hours_sessions: Dict[uuid.UUID, OfficeHours] = {}
+office_hours_sessions: Dict[uuid.UUID, OfficeHours] = {}
 
 office_hours_state: Dict[uuid.UUID, ClassQueue] = {}
 
@@ -91,6 +91,33 @@ def courses_list(request):
 
 
 def course_office_hours(request, course_id):
+    course_id = UUID(course_id)
+    if course_id not in courses:
+        return HttpResponse(status=404)
+    if course_id not in office_hours_sessions:
+        office_hours_sessions[course_id] = OfficeHours(
+            course_id, random_join_code(), [], [], {}, {})
+    # Get a course's office hours
+    if request.method == 'GET':
+        # return a JSON from the dict
+        office_hours = office_hours_sessions[course_id]
+        course = courses[course_id]
+        officeHours = {'courseAbbreviation': course.abbreviation,
+                       'teachingAssistants': list(map(lambda x: x._asdict(), office_hours.teaching_assistants)),
+                       'students': list(map(lambda x: x._asdict(), office_hours.students)),
+                       }
+        identity = get_identity(request, course_id)
+        if identity is None:
+            return HttpResponse(json.dumps(officeHours))
+        if identity.id in office_hours.teaching_assistant_sessions:
+            print(office_hours.student_join_code)
+            officeHours['studentJoinCode'] = office_hours.student_join_code
+        return HttpResponse(json.dumps(officeHours))
+
+
+
+    # @@@@@ old code above this line
+
     course_id = UUID(course_id)
     # check whether the course exists
     if course_id not in courses:
