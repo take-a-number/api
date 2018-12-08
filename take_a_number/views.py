@@ -1,7 +1,7 @@
 # from flask import Flask, session, request, jsonify, abort
 # from flask_cors import CORS
 # from flask_uuid import FlaskUUID
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 
 from typing import Dict
 import random
@@ -67,7 +67,7 @@ def get_identity(request, course_id):
     office_hours = office_hours_state[course_id]
     # cookie used to track the browser session
     if 'whoami' in request.session:
-        whoami: str = request.session['whoami'] # get the uuid of the session
+        whoami: str = request.session['whoami']  # get the uuid of the session
         # user is a student
         if whoami in office_hours.studentSessions:
             return office_hours.studentSessions[whoami]
@@ -86,8 +86,17 @@ def course_office_hours_identity(request, course_id):
     return HttpResponse(json.dumps(identity._asdict()))
 
 
-def courses_list(request):
-    return HttpResponse(json.dumps(list(map(lambda x: x._asdict(), courses.values())), cls=UUIDEncoder))
+def courses_handler(request):
+    if request.method == 'GET':   # Get all coursers as a json
+        return HttpResponse(json.dumps(list(map(lambda x: x._asdict(), courses.values())), cls=UUIDEncoder))
+    elif request.method == 'PUT':  # Create a course
+        json_req = json.loads(request.body)
+        if json_req is None:
+            return HttpResponseBadRequest()
+        # Verify form fields are correct
+        # Add to dict
+        # Return json.dumps(new_course_uuid)
+        return HttpResponse(content='')
 
 
 def course_office_hours(request, course_id):
@@ -114,8 +123,6 @@ def course_office_hours(request, course_id):
     #         officeHours['studentJoinCode'] = office_hours.student_join_code
     #     return HttpResponse(json.dumps(officeHours))
 
-
-
     # @@@@@ old code above this line
 
     course_id = UUID(course_id)
@@ -140,8 +147,10 @@ def course_office_hours(request, course_id):
         # return the course, tas, and students
         officeHours = {
             'courseAbbreviation': course.abbreviation,
-            'teachingAssistants': list(map(lambda x: x.asDict(), office_hours.tas)), #list(map(lambda x: x._asdict(), office_hours.tas)),
-            'students': list(map(lambda x: x.asDict(), office_hours.students)) #list(map(lambda x: x._asdict(), office_hours.students)),
+            # list(map(lambda x: x._asdict(), office_hours.tas)),
+            'teachingAssistants': list(map(lambda x: x.asDict(), office_hours.tas)),
+            # list(map(lambda x: x._asdict(), office_hours.students)),
+            'students': list(map(lambda x: x.asDict(), office_hours.students))
         }
         identity = get_identity(request, course_id)
         if identity is None:
@@ -172,13 +181,13 @@ def course_office_hours(request, course_id):
                 office_hours_state[course_id].studentSessions[new_uuid] = QueueMember(
                     json_req['name'], new_uuid, "student")
                 request.session['whoami'] = new_uuid
-                return HttpResponse("{}") # return an empty result
+                return HttpResponse("{}")  # return an empty result
             elif json_req['joinCode'] == courses[course_id].teaching_assistant_join_code:
                 new_uuid = str(uuid.uuid4())
                 office_hours_state[course_id].taSessions[new_uuid] = QueueTA(
                     json_req['name'], new_uuid, "teaching_assistant", None)
                 request.session['whoami'] = new_uuid
-                return HttpResponse("{}") # return empty result
+                return HttpResponse("{}")  # return empty result
             else:
                 # join code was not valid for student or ta
                 return HttpResponse(status=401)
@@ -193,6 +202,8 @@ def course_office_hours(request, course_id):
         return HttpResponse(status=401)
 
 # do operations on the list of students
+
+
 def course_office_hours_queue(request, course_id):
     course_id = UUID(course_id)
     # check that course exists and has an active session
@@ -210,14 +221,14 @@ def course_office_hours_queue(request, course_id):
     if request.method == 'PUT':
         session_dict = office_hours_state[course_id]
         # append to end of previous list; write the result back
-        session_dict.enqueue(student) # TODO look at what "student" is
+        session_dict.enqueue(student)  # TODO look at what "student" is
         # rewrite state with modified data
         office_hours_state[course_id] = session_dict
         return HttpResponse('{}')
 
     # student removes self from queue
     if request.method == 'DELETE':
-        session_dict = office_hours_state[course_id]#._asdict()
+        session_dict = office_hours_state[course_id]  # ._asdict()
         # remove from previous list; write the result back
         session_dict.removeStudent(student.id)
         office_hours_state[course_id] = session_dict
@@ -293,6 +304,8 @@ def course_office_hours_teaching_assistants(request, course_id):
         return HttpResponse('{}')
 
 # from https://stackoverflow.com/questions/36588126/uuid-is-not-json-serializable
+
+
 class UUIDEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, UUID):
