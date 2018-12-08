@@ -91,6 +91,12 @@ def courses_list(request):
 
 
 def course_office_hours(request, course_id):
+    return HttpResponse(json.dumps(
+        {'courseAbbreviation': 'CS3251',
+         'teachingAssistants': [],
+         'students': [],
+         }
+    ))
     course_id = UUID(course_id)
     if course_id not in courses:
         return HttpResponse(status=404)
