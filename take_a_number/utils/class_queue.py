@@ -59,12 +59,20 @@ class ClassQueue:
         self.studentJoinCode = studentJoinCode
         if students is None:
             self.students = [] # list (queue) of students
+        else:
+            self.students = students
         if tas is None:
             self.tas = [] # list of tas
+        else:
+            self.tas = tas
         if studentSessions is None:
             self.studentSessions = {} # will hold map of QueueMember
+        else:
+            self.studentSessions = studentSessions
         if taSessions is None:
             self.taSessions = {} # will hold map of QueueTA
+        else:
+            self.taSessions = taSessions
 
     # Check whether the ClassQueue is empty
     def isEmpty(self):
