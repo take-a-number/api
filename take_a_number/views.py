@@ -146,7 +146,6 @@ def course_office_hours(request, course_id):
         if 'joinCode' in json_req and 'name' in json_req:
             if json_req['joinCode'] == office_hours_state[course_id].studentJoinCode:
                 new_uuid = str(uuid.uuid4())
-                # TODO figure out logic of adding new student (what sessions map to)
                 office_hours_state[course_id].studentSessions[new_uuid] = QueueMember(
                     json_req['name'], new_uuid, "student")
                 request.session['whoami'] = new_uuid
@@ -182,9 +181,6 @@ def course_office_hours_queue(request, course_id):
     if identity is None or identity.id not in office_hours_state[course_id].studentSessions:
         return HttpResponse(status=401)
     student = office_hours_state[course_id].studentSessions[identity.id]
-    # some error occurred, id is in the session but the student is not
-    if student not in office_hours_state[course_id].students:
-        return HttpResponse(status=400)
 
     # student adds self to queue
     if request.method == 'PUT':
@@ -194,6 +190,10 @@ def course_office_hours_queue(request, course_id):
         # rewrite state with modified data
         office_hours_state[course_id] = session_dict
         return HttpResponse('{}')
+
+    # some error occurred, should not reach this point without being in queue
+    if student not in office_hours_state[course_id].students:
+        return HttpResponse(status=400)
 
     # student removes self from queue
     if request.method == 'DELETE':
@@ -273,8 +273,6 @@ def course_office_hours_teaching_assistants(request, course_id):
         return HttpResponse('{}')
 
 # from https://stackoverflow.com/questions/36588126/uuid-is-not-json-serializable
-
-
 class UUIDEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, UUID):
