@@ -5,6 +5,7 @@ class QueueMember:
         self.id = id
         self.type = type
 
+    # return the student as a dictionary, to be used with json response
     def asDict(self):
         return {
             'name': self.name,
@@ -20,21 +21,27 @@ class QueueTA:
         self.type = type
         self.helping = helping # helping contains the QueueMember being helped
 
+    # get the student who is being helped
     def getHelping(self):
         return self.helping
 
+    # check whether ta is helping a particular student
     def isHelping(self, rhs):
         return self.helping == rhs
 
+    # check whether ta is helping anyone
     def isHelpingSomeone(self):
         return self.helping != None
 
+    # indicate that the ta is no longer helping anyone
     def stopHelping(self):
         self.helping = None
 
+    # indicate that the ta is now helping someone else
     def startHelping(self, helping):
         self.helping = helping
 
+    # return the ta as a dictionary, to be used in json response
     def asDict(self):
         if self.helping == None:
             helpingDict = None
@@ -49,6 +56,7 @@ class QueueTA:
 
 
 # Underlying queue which which be created for each class
+# Note: not all of this functionality is currently being used in production
 class ClassQueue:
     # default arguments must be "None" to fix issue with mutable default args
     def __init__(self, courseAbbrev = None, studentJoinCode = None, students = None,
@@ -90,21 +98,25 @@ class ClassQueue:
     def hasTas(self):
         return self.tas != []
 
+    # check whether the queue is nonempty
     def hasStudents(self):
         return self.students != []
 
+    # get a list of the students with course sessions by id
     def getStudentSessionIds(self):
         ret = []
-        for student in self.studentSessions:
-            ret.append(student.id)
+        for id, student in self.studentSessions:
+            ret.append(id)
         return ret
 
+    # get a list of the tas with course sessions by id
     def getTaSessionIds(self):
         ret = []
         for ta in self.taSessions:
             ret.append(ta.id)
         return ret
 
+    # return the class queue's students and tas as a dictionary
     def asDict(self):
         resp = {}
         resp['students'] = self.students

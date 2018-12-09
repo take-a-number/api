@@ -102,6 +102,7 @@ def courses_handler(request):
             courses[uuid.UUID(hex=str(new_uuid))] = Course(abbreviation, description, new_uuid, random_join_code())
         except KeyError: # some fields were not present
             return HttpResponseBadRequest()
+        # TODO return some info related to the new join code?
         return HttpResponse(json.dumps(new_uuid))
 
 
