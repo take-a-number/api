@@ -25,7 +25,7 @@ SECRET_KEY = os.urandom(50)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['takeanumber-api.herokuapp.com', 'localhost']
 
 
 # Application definition
@@ -46,7 +46,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -126,4 +125,11 @@ STATIC_URL = '/static/'
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
 CORS_ORIGIN_ALLOW_ALL = True
+#CORS_ORIGIN_WHITELIST = ['takeanumber.netlify.com']
 CORS_ALLOW_CREDENTIALS = True
+#CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+#CSRF_USE_SESSIONS = True
+#CSRF_COOKIE_HTTPONLY = False
+SESSION_COOKIE_HTTPONLY = False
+SESSION_COOKIE_SAMESITE = None
