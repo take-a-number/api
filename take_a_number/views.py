@@ -88,20 +88,30 @@ def course_office_hours_identity(request, course_id):
 
 def courses_handler(request):
     if request.method == 'GET':   # Get all courses as a json
-        return HttpResponse(json.dumps(list(map(lambda x: x._asdict(), courses.values())), cls=UUIDEncoder))
+        all_courses = list(Course.objects.all())
+        course_list = list(map(lambda x: x.__dict__, all_courses))
+        for course in course_list:
+            del course['_state'] # make the course serializable
+        return HttpResponse(json.dumps(course_list, cls=UUIDEncoder))
     elif request.method == 'PUT':  # Create a course
         json_req = json.loads(request.body)
         if json_req is None:
             return HttpResponseBadRequest()
-        json_req: Dict[str, str] = json.loads(json_req)
+        course_data: Dict[str, str] = json.loads(json_req)
         try: # validate form fields using a try-except
             new_uuid = str(uuid.uuid4())
-            description = json_req['description']
-            abbreviation = json_req['abbreviation']
+            school = course_data['school']
+            email = course_data['email']
+            name = course_data['course_name']
+            abbr = course_data['course_abbr']
+            course_data['course_id'] = str(uuid.uuid4())
+            course_data['ta_code'] = random_join_code()
             # TODO use the email field for something meaningful
-            courses[uuid.UUID(hex=str(new_uuid))] = Course(abbreviation, description, new_uuid, random_join_code())
-        except KeyError: # some fields were not present
+            class_instance = Course(new_uuid, school, name, abbr, email, random_join_code())
+            class_instance.save()
+        except KeyError:  # some fields were not present
             return HttpResponseBadRequest()
+
         # TODO return some info related to the new join code?
         return HttpResponse(json.dumps(new_uuid))
 

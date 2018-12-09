@@ -1,8 +1,9 @@
 from collections import namedtuple
 from enum import Enum
+from django.db import models
 
 
-Course = namedtuple('Course', ['abbreviation', 'description', 'id', 'teaching_assistant_join_code'])
+# Course = namedtuple('Course', ['abbreviation', 'description', 'id', 'teaching_assistant_join_code'])
 # interface ICourse {
 #   abbreviation: string;
 #   description: string;
@@ -38,3 +39,15 @@ class UserType(Enum):
 #   TeachingAssistant = "teaching_assistant",
 #   Student = "student"
 # }
+
+
+class Course(models.Model):
+    id = models.UUIDField(blank="", primary_key=True)
+    school = models.CharField(max_length=200, blank="")
+    description = models.CharField(max_length=200, blank="")
+    abbreviation = models.CharField(max_length=200, blank="")
+    email = models.EmailField(max_length=200, blank="")
+    teachingAssistantJoinCode = models.SlugField(max_length=6, blank="")
+
+    def __str__(self):
+        return self.abbreviation
