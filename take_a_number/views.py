@@ -87,6 +87,7 @@ def course_office_hours_identity(request, course_id):
 
 
 def courses_handler(request):
+    Course.objects.all().delete()
     if request.method == 'GET':   # Get all courses as a json
         all_courses = list(Course.objects.all())
         course_list = list(map(lambda x: x.__dict__, all_courses))
@@ -100,15 +101,19 @@ def courses_handler(request):
         course_data: Dict[str, str] = json.loads(json_req)
         try: # validate form fields using a try-except
             new_uuid = str(uuid.uuid4())
-            school = course_data['school']
             email = course_data['email']
-            name = course_data['course_name']
-            abbr = course_data['course_abbr']
-            course_data['course_id'] = str(uuid.uuid4())
-            course_data['ta_code'] = random_join_code()
+            name = course_data['description']
+            abbr = course_data['abbreviation']
+            if 'school' in course_data.keys():
+                school = course_data['school']
+            else:
+                school = 'Vanderbilt University'
+
             # TODO use the email field for something meaningful
+            if list(Course.objects.filter(abbreviation=abbr)) != []:  # class already registered
+                return HttpResponseBadRequest(content='This course is already registered.')
             class_instance = Course(new_uuid, school, name, abbr, email, random_join_code())
-            class_instance.save()
+            class_instance.save(content='Oops, you missed a field!')
         except KeyError:  # some fields were not present
             return HttpResponseBadRequest()
 
