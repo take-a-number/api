@@ -23,8 +23,8 @@ from .utils.class_queue import ClassQueue, QueueMember, QueueTA
 
 # Dictionary where keys are the course names and values the queues of each active course
 # Associates the course abbreviation with an active class
-courses: Dict[uuid.UUID, Course] = {uuid.UUID(hex='43eaa6d8-5def-4567-a50c-293dc3566640'): Course(
-    'CS3251', 'Intermediate Software Design', uuid.UUID(hex='43eaa6d8-5def-4567-a50c-293dc3566640'), 'TA1234')}
+# courses: Dict[uuid.UUID, Course] = {uuid.UUID(hex='43eaa6d8-5def-4567-a50c-293dc3566640'): Course(
+#     'CS3251', 'Intermediate Software Design', uuid.UUID(hex='43eaa6d8-5def-4567-a50c-293dc3566640'), 'TA1234')}
 #   {
 #     abbreviation: 'CS3251',
 #     description: 'Intermediate Software Design',
@@ -61,7 +61,7 @@ def random_join_code() -> str:
 # get the uuid for the user session
 def get_identity(request, course_id):
     # check whether the course exists or has active office hours
-    if course_id not in courses or course_id not in office_hours_state:
+    if list(Course.objects.filter(id=course_id)) == [] or course_id not in office_hours_state:
         return None
     # obtain the OfficeHours model based on course_id
     office_hours = office_hours_state[course_id]
@@ -87,6 +87,7 @@ def course_office_hours_identity(request, course_id):
 
 
 def courses_handler(request):
+    Course.objects.all().delete()
     if request.method == 'GET':   # Get all courses as a json
         all_courses = list(Course.objects.all())
         course_list = list(map(lambda x: x.__dict__, all_courses))
@@ -123,7 +124,7 @@ def courses_handler(request):
 def course_office_hours(request, course_id):
     course_id = UUID(hex=course_id)
     # check whether the course exists
-    if course_id not in courses:
+    if list(Course.objects.filter(id=course_id)) == []:
         return HttpResponse(status=404)
     # if the course has no active session, create an entry for it
     if course_id not in office_hours_state:
@@ -133,7 +134,7 @@ def course_office_hours(request, course_id):
     if request.method == 'GET':
         # return a JSON from the dict
         office_hours = office_hours_state[course_id]
-        course = courses[course_id]
+        course = Course.objects.get(id=course_id)
         # return the course, tas, and students
         officeHours = {
             'courseAbbreviation': course.abbreviation,
@@ -169,7 +170,7 @@ def course_office_hours(request, course_id):
                     json_req['name'], new_uuid, "student")
                 request.session['whoami'] = new_uuid
                 return HttpResponse("{}")  # return an empty result
-            elif json_req['joinCode'] == courses[course_id].teaching_assistant_join_code:
+            elif json_req['joinCode'] == Course.objects.get(id=course_id).teaching_assistant_join_code:
                 new_uuid = str(uuid.uuid4())
                 office_hours_state[course_id].taSessions[new_uuid] = QueueTA(
                     json_req['name'], new_uuid, "teaching_assistant", None)
@@ -192,7 +193,7 @@ def course_office_hours(request, course_id):
 def course_office_hours_queue(request, course_id):
     course_id = UUID(course_id)
     # check that course exists and has an active session
-    if course_id not in courses or course_id not in office_hours_state:
+    if list(Course.objects.filter(id=course_id)) == [] or course_id not in office_hours_state:
         return HttpResponse(status=404)
     identity = get_identity(request, course_id)
     if identity is None or identity.id not in office_hours_state[course_id].studentSessions:
@@ -230,7 +231,7 @@ def course_office_hours_queue(request, course_id):
 def course_office_hours_teaching_assistants(request, course_id):
     course_id = UUID(course_id)
     # makes sure the course exists and has a session
-    if course_id not in courses or course_id not in office_hours_state:
+    if list(Course.objects.filter(id=course_id)) == [] or course_id not in office_hours_state:
         return HttpResponse(status=404)
     identity = get_identity(request, course_id)
     # handle if the user is not a ta
