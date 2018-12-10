@@ -87,7 +87,6 @@ def course_office_hours_identity(request, course_id):
 
 
 def courses_handler(request):
-    Course.objects.all().delete()
     if request.method == 'GET':   # Get all courses as a json
         all_courses = list(Course.objects.all())
         course_list = list(map(lambda x: x.__dict__, all_courses))
@@ -113,9 +112,9 @@ def courses_handler(request):
             if list(Course.objects.filter(abbreviation=abbr)) != []:  # class already registered
                 return HttpResponseBadRequest(content='This course is already registered.')
             class_instance = Course(new_uuid, school, name, abbr, email, random_join_code())
-            class_instance.save(content='Oops, you missed a field!')
+            class_instance.save()
         except KeyError:  # some fields were not present
-            return HttpResponseBadRequest()
+            return HttpResponseBadRequest(content='Oops, you missed a field!')
 
         # TODO return some info related to the new join code?
         return HttpResponse(json.dumps(new_uuid))
