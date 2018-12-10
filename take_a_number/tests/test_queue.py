@@ -1,9 +1,5 @@
 from django.test import TestCase
 from take_a_number.utils.class_queue import ClassQueue, QueueMember, QueueTA
-from take_a_number.views import random_join_code
-from typing import Dict
-from .models import Course, OfficeHours, Student, TeachingAssistant
-import uuid
 
 
 class QueueTest(TestCase):
@@ -24,6 +20,36 @@ class QueueTest(TestCase):
 
     def create_queue(self):
         return ClassQueue()
+
+    # make sure QueueTA works as desired
+    def test_ta_class(self):
+        member1 = self.create_member1()
+        helpingTA = QueueTA("john", 11, "teaching_assistant", member1)
+        self.assertEqual(True, helpingTA.isHelpingSomeone())
+        self.assertEqual(True, helpingTA.isHelping(member1))
+        self.assertEqual(member1, helpingTA.getHelping())
+        helpingTA.stopHelping()
+        self.assertEqual(False, helpingTA.isHelpingSomeone())
+        self.assertEqual(False, helpingTA.isHelping(member1))
+        helpingTA.startHelping(member1)
+        self.assertEqual(True, helpingTA.isHelpingSomeone())
+        self.assertEqual(True, helpingTA.isHelping(member1))
+        self.assertEqual(member1, helpingTA.getHelping())
+        self.assertEqual(helpingTA.asDict(), {'name': 'john', 'id': 11, 'type': 'teaching_assistant',
+                                              'helping': {'name': 'Name1', 'id': 1, 'type': None}})
+
+    # test the queue creation and various functions
+    def test_queue_create(self):
+        q = ClassQueue('CS1', 'AB1234', [], [], {}, {})
+        self.assertEqual(True, q.isEmpty())
+        self.assertEqual(0, q.studentCount())
+        self.assertEqual(0, q.taCount())
+        self.assertEqual('AB1234', q.studentJoinCode)
+        self.assertEqual([], q.getStudentSessionIds())
+        self.assertEqual([], q.getTaSessionIds())
+        self.assertEqual({'students': [], 'tas': []}, q.asDict())
+        self.assertEqual(-1, q.removeStudent(10))
+        self.assertEqual(-1, q.removeTA(10))
 
     # enqueue and dequeue students to queue
     def test_enqueue_dequeue(self):
@@ -87,6 +113,10 @@ class QueueTest(TestCase):
         self.assertEqual(member2, q.removeStudent(member2.id))
         self.assertEqual(0, q.size())
         self.assertEqual(True, q.isEmpty())
+        self.assertEqual(True, q.hasTas())
+        q.removeTA(11)
+        self.assertEqual(False, q.hasTas())
+        self.assertEqual(0, q.taCount())
 
     # add students to a queue and check positions
     def test_status(self):
@@ -109,16 +139,3 @@ class QueueTest(TestCase):
         ta1 = self.create_ta1()
         self.assertEqual(member1.asDict(), {'name': 'Name1', 'id': 1, "type": None})
         self.assertEqual(ta1.asDict(), {'name': 'TA1', 'id': 11, 'type': None, 'helping': None})
-
-
-class JoinCodeTest(TestCase):
-    def test_jc(self):
-        code1 = random_join_code()
-        valid = True
-        for elem in code1:
-            if not elem.isdigit() and not elem.isupper():
-                valid = False
-        self.assertEqual(True, valid)
-
-# TODO add tests for the views.py logic
-#class ViewsTest(TestCase):
