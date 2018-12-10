@@ -87,7 +87,6 @@ def course_office_hours_identity(request, course_id):
 
 
 def courses_handler(request):
-    Course.objects.all().delete()
     if request.method == 'GET':   # Get all courses as a json
         all_courses = list(Course.objects.all())
         course_list = list(map(lambda x: x.__dict__, all_courses))
