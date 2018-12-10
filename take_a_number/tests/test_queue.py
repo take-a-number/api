@@ -47,7 +47,7 @@ class QueueTest(TestCase):
         self.assertEqual('AB1234', q.studentJoinCode)
         self.assertEqual([], q.getStudentSessionIds())
         self.assertEqual([], q.getTaSessionIds())
-        self.assertEqual({'students': [], 'tas': []}, q.asDict())
+        self.assertEqual({'students': [], 'teachingAssistants': []}, q.asDict())
         self.assertEqual(-1, q.removeStudent(10))
         self.assertEqual(-1, q.removeTA(10))
 
