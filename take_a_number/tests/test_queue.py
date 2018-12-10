@@ -1,9 +1,5 @@
 from django.test import TestCase
 from take_a_number.utils.class_queue import ClassQueue, QueueMember, QueueTA
-from take_a_number.views import random_join_code
-from typing import Dict
-from .models import Course, OfficeHours, Student, TeachingAssistant
-import uuid
 
 
 class QueueTest(TestCase):
@@ -109,16 +105,3 @@ class QueueTest(TestCase):
         ta1 = self.create_ta1()
         self.assertEqual(member1.asDict(), {'name': 'Name1', 'id': 1, "type": None})
         self.assertEqual(ta1.asDict(), {'name': 'TA1', 'id': 11, 'type': None, 'helping': None})
-
-
-class JoinCodeTest(TestCase):
-    def test_jc(self):
-        code1 = random_join_code()
-        valid = True
-        for elem in code1:
-            if not elem.isdigit() and not elem.isupper():
-                valid = False
-        self.assertEqual(True, valid)
-
-# TODO add tests for the views.py logic
-#class ViewsTest(TestCase):
