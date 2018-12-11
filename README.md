@@ -6,6 +6,8 @@ queue designed for university TA sessions.
 [![Coverage Status](https://coveralls.io/repos/github/vanderbilt-design-studio/your-print-is-ready/badge.svg?branch=master)](https://coveralls.io/github/take-a-number/api?branch=master)  
 
 # Potential Future Features
+* Join codes should not have ambiguous characters (0 vs O)
+* Mechanism to return the TA join code of a new course to the creator
 * Mechanism to indicate that a TA is now finished helping students
 * Ability to insert students to arbitrary locations in the queue
 * Storage of course information such as office hour schedules
