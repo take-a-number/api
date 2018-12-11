@@ -22,21 +22,25 @@ class ViewsTest(TestCase):
         c = Client()
 
         create_response = c.put('',
-                                b'"{\\"description\\":\\"Algorithms\\",\\"abbreviation\\":\\"CS 3250\\",\\"email\\":\\"e@m.vanderbilt.edu\\"}"')
+                                b'"{\\"description\\":\\"Algorithms\\",\\"abbreviation\\":\\"CS 3250\\",\\"email\\":\\"e@vanderbilt.edu\\"}"')
         self.assertEqual(create_response.status_code, 200)
 
         # can't register the same class twice
         create_response2 = c.put('',
-                                b'"{\\"description\\":\\"Algorithms\\",\\"abbreviation\\":\\"CS 3250\\",\\"email\\":\\"e@m.vanderbilt.edu\\"}"')
+                                b'"{\\"description\\":\\"Algorithms\\",\\"abbreviation\\":\\"CS 3250\\",\\"email\\":\\"e@vanderbilt.edu\\"}"')
         self.assertEqual(create_response2.status_code, 400)
 
-    def test_identity(self):
-        c = Client()
-
-        create_response = c.put('', b'"{\\"description\\":\\"Algorithms\\",\\"abbreviation\\":\\"CS 3250\\",\\"email\\":\\"e@m.vanderbilt.edu\\"}"')
-        course_id = json.loads(create_response.content)
-
-        # id_response = c.get('{}/office_hours/identity'.format(course_id))
+    # def test_identity(self):
+    #     c = Client()
+    #
+    #     create_response = c.put('', b'"{\\"description\\":\\"Algorithms\\",\\"abbreviation\\":\\"CS 3250\\",\\"email\\":\\"e@m.vanderbilt.edu\\"}"')
+    #     course_id = json.loads(create_response.content)
+    #
+    #     print('/{}/office_hours/students'.format(course_id))
+    #     id_response = c.get('/{}/office_hours/students'.format(course_id), follow=True)
+    #     id_response = c.get('/{}/office_hours/students'.format(course_id), follow=True)
+    #     print(id_response.redirect_chain)
+    #     print(id_response)
         # course_dict = json.loads(id_response.content)
         # self.assertEqual("Vanderbilt University", course_dict["school"])
         # self.assertEqual("Algorithms", course_dict["description"])
@@ -47,13 +51,20 @@ class ViewsTest(TestCase):
         c = Client()
 
         create_response = c.put('',
-                                b'"{\\"description\\":\\"ISD\\",\\"abbreviation\\":\\"CS 3251\\",\\"email\\":\\"e@m.vanderbilt.edu\\"}"')
+                                b'"{\\"description\\":\\"ISD\\",\\"abbreviation\\":\\"CS 3251\\",\\"email\\":\\"e@vanderbilt.edu\\"}"')
         course_id = json.loads(create_response.content)
 
         lookup_response = c.get('')
-        course_dict = json.loads(lookup_response.content)
-        # full_course_dict = {c_id: val.__dict__ for c_id, val in course_dict[0].items()}
-        self.assertEqual(course_dict[0]['id'], course_id)
+        course_dict_list = json.loads(lookup_response.content)
+        self.assertEqual(len(course_dict_list), 1)
+
+        course_dict = course_dict_list[0]
+        self.assertEqual(course_dict['id'], course_id)
+        self.assertEqual(course_dict['school'], 'Vanderbilt University')
+        self.assertEqual(course_dict['description'], 'ISD')
+        self.assertEqual(course_dict['abbreviation'], 'CS 3251')
+        self.assertEqual(course_dict['email'], 'e@vanderbilt.edu')
+
 
     def test_students(self):
         return
