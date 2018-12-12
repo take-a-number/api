@@ -130,7 +130,11 @@ SESSION_COOKIE_SAMESITE = None
 DATABASES = {}
 if 'TRAVIS' in os.environ:
     # Activate travis
-    DATABASES['default'] = dj_database_url.config()
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'travis_ci_test',
+        'USER': 'postgres',
+    }
 elif 'DYNO' in os.environ:
     # Activate Django-Heroku.
     django_heroku.settings(locals())

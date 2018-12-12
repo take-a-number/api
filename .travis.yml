@@ -3,11 +3,13 @@ matrix:
   include:
   - python: 3.6
 install:
-- pip install -r requirements.txt
-- pip install coveralls
+  - pip install -r requirements.txt
+  - pip install coveralls
+before_script:
+  - psql -c 'create database travis_ci_test;' -U postgres
 script:
-- ./manage.py migrate
-- coverage run --omit '/home/travis/virtualenv*' manage.py test
+  - ./manage.py migrate
+  - coverage run --omit '/home/travis/virtualenv*' manage.py test
 after_success: coveralls
 services:
   - postgresql
