@@ -1,6 +1,3 @@
-# from flask import Flask, session, request, jsonify, abort
-# from flask_cors import CORS
-# from flask_uuid import FlaskUUID
 from django.http import HttpResponse, HttpResponseBadRequest
 
 from typing import Dict
@@ -11,44 +8,9 @@ from uuid import UUID
 import json
 
 
-from .models import Course, OfficeHours, Student, TeachingAssistant
+from .models import Course
 from .utils.class_queue import ClassQueue, QueueMember, QueueTA
 
-# TODO remove this block of code
-# app = Flask(__name__)
-# CORS(app, supports_credentials=True)
-# app.secret_key = os.urandom(24)
-# app.config.update(SESSION_COOKIE_HTTPONLY=False, SESSION_COOKIE_SECURE=False)
-# FlaskUUID(app)
-
-# Dictionary where keys are the course names and values the queues of each active course
-# Associates the course abbreviation with an active class
-# courses: Dict[uuid.UUID, Course] = {uuid.UUID(hex='43eaa6d8-5def-4567-a50c-293dc3566640'): Course(
-#     'CS3251', 'Intermediate Software Design', uuid.UUID(hex='43eaa6d8-5def-4567-a50c-293dc3566640'), 'TA1234')}
-#   {
-#     abbreviation: 'CS3251',
-#     description: 'Intermediate Software Design',
-#     id: '43eaa6d8-5def-4567-a50c-293dc3566640',
-#   },
-#   {
-#     abbreviation: 'CS3250',
-#     description: 'Algorithms',
-#     id: '2b77c97b-1708-401c-bbc3-5323a480ee48',
-#   },
-#   {
-#     abbreviation: 'CS3270',
-#     description: 'Programming Languages',
-#     id: 'd9367a7d-4ec8-4ab6-a680-017a7326d1fd',
-#   },
-#   {
-#     abbreviation: 'CS2212',
-#     description: 'Discrete Structures',
-#     id: '7c3dc539-6b47-4772-a9a9-5384c0e420b9',
-#   },
-
-# Holds the state of the running application
-# Maps from the ID of a course (provided by uuid) to relevant information
-#office_hours_sessions: Dict[uuid.UUID, OfficeHours] = {}
 
 office_hours_state: Dict[uuid.UUID, ClassQueue] = {}
 
