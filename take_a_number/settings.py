@@ -74,18 +74,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'take_a_number.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-DATABASES = {
-    "default": {
-
-    }
-}
-
-db_from_env = dj_database_url.config()
-DATABASES["default"].update(db_from_env)
-
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
 
@@ -136,5 +124,15 @@ SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SAMESITE = None
 
-# Activate Django-Heroku.
-django_heroku.settings(locals())
+
+# Database
+# https://docs.djangoproject.com/en/2.1/ref/settings/#databases
+DATABASES = {}
+if 'TRAVIS' in os.environ:
+    # Activate travis
+    DATABASES['default'] = dj_database_url.config()
+elif 'DYNO' in os.environ:
+    # Activate Django-Heroku.
+    django_heroku.settings(locals())
+else:
+    DATABASES['default'] = dj_database_url.config()
