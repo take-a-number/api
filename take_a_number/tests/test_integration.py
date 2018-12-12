@@ -91,10 +91,24 @@ class ViewsTest(TestCase):
                                         "teachingAssistants": [],
                                         "students": []})
 
+        # modify office hours (not allowed)
+        get_response = c.post('/{}/office_hours/'.format(course_id))
+        self.assertEqual(get_response.status_code, 400)
 
+        # valid TA join code entered
+        get_response = c.put('/{}/office_hours/'.format(course_id),
+                             b'"{\\"name\\":\\"Emily\\",\\"joinCode\\":\\"TA1234\\"}"')
+        self.assertEqual(get_response.content, b'')  # success
 
+        # invalid join code entered
+        get_response = c.put('/{}/office_hours/'.format(course_id),
+                             b'"{\\"name\\":\\"Emily\\",\\"joinCode\\":\\"AAAAAA\\"}"')
+        self.assertEqual(get_response.status_code, 401)
 
-
+        # missing user's name
+        get_response = c.put('/{}/office_hours/'.format(course_id),
+                             b'"{\\"joinCode\\":\\"AAAAAA\\"}"')
+        self.assertEqual(get_response.status_code, 400)
 
 # TODO add tests for the views.py logic
 #class ViewsTest(TestCase):
