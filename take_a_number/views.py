@@ -169,7 +169,7 @@ def course_office_hours(request, course_id):
                     json_req['name'], new_uuid, "student")
                 request.session['whoami'] = new_uuid
                 return HttpResponse("{}")  # return an empty result
-            elif json_req['joinCode'] == Course.objects.get(id=course_id).teaching_assistant_join_code:
+            elif json_req['joinCode'] == Course.objects.get(id=course_id).teachingAssistantJoinCode:
                 new_uuid = str(uuid.uuid4())
                 office_hours_state[course_id].taSessions[new_uuid] = QueueTA(
                     json_req['name'], new_uuid, "teaching_assistant", None)
