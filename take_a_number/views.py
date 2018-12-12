@@ -147,7 +147,6 @@ def course_office_hours(request, course_id):
     # TODO A user has left office hours; does not change anything yet
     elif request.method == 'DELETE':
         # TODO grab user info from session
-        req: Dict[str, str] = json.loads(request.get_json())
         return HttpResponse(status=401)
 
 
