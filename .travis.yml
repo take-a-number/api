@@ -9,3 +9,5 @@ script:
 - ./manage.py migrate
 - coverage run --omit '/home/travis/virtualenv*' manage.py test
 after_success: coveralls
+services:
+  - postgresql
