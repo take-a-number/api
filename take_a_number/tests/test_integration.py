@@ -35,21 +35,6 @@ class ViewsTest(TestCase):
                                  b'"{\\"description\\":\\"Algorithms\\",\\"email\\":\\"e@vanderbilt.edu\\"}"')
         self.assertEqual(create_response2.status_code, 400)
 
-    # def test_identity(self):
-    #     c = Client()
-    #     session = c.session
-    #     session['whoami'] = str(uuid.uuid4())
-    #     session.save
-    #
-    #     create_response = c.put('', b'"{\\"description\\":\\"Algorithms\\",\\"abbreviation\\":\\"CS 3250\\",\\"email\\":\\"e@m.vanderbilt.edu\\"}"')
-    #     course_id = json.loads(create_response.content)
-    #
-    #     id_response = c.get('/{}/office_hours/identity'.format(course_id))
-    #     course_dict = json.loads(id_response.content)
-    #     self.assertEqual("Vanderbilt University", course_dict["school"])
-    #     self.assertEqual("Algorithms", course_dict["description"])
-    #     self.assertEqual("CS 3250", course_dict["abbreviation"])
-    #     self.assertEqual("e.m@vanderbilt.edu", course_dict["email"])
 
     def test_course_lookup(self):
         c = Client()
@@ -69,22 +54,13 @@ class ViewsTest(TestCase):
         self.assertEqual(course_dict['email'], 'e@vanderbilt.edu')
 
 
-    def test_students(self):
-        session = self.client.session
-        session['whoami'] = str(uuid.uuid4())
-        session.save
-        return
-
-    def test_course_teaching_assistants(self):
-        return
-
     def test_office_hours(self):
         c = Client()
         create_response = c.put('',
                                 b'"{\\"description\\":\\"ISD\\",\\"abbreviation\\":\\"CS 3251\\",\\"email\\":\\"e@vanderbilt.edu\\"}"')
         course_id = json.loads(create_response.content)
 
-        # intial office hours configuration
+        # initial office hours configuration
         get_response = c.get('/{}/office_hours/'.format(course_id))
         office_hours = json.loads(get_response.content)
         self.assertEqual(office_hours, {"courseAbbreviation": "CS 3251",
@@ -107,8 +83,10 @@ class ViewsTest(TestCase):
 
         # missing user's name
         get_response = c.put('/{}/office_hours/'.format(course_id),
-                             b'"{\\"joinCode\\":\\"AAAAAA\\"}"')
+                             b'"{\\"joinCode\\":\\"TA1234\\"}"')
         self.assertEqual(get_response.status_code, 400)
 
-# TODO add tests for the views.py logic
-#class ViewsTest(TestCase):
+        # deleting a course is not currently supported
+        get_response = c.delete('/{}/office_hours/'.format(course_id),
+                             b'"{\\"name\\":\\"Emily\\",\\"joinCode\\":\\"TA1234\\"}"')
+        self.assertEqual(get_response.status_code, 401)
