@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.urandom(50)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = 'DYNO' not in os.environ
 
 ALLOWED_HOSTS = ['takeanumber-api.herokuapp.com', 'localhost']
 
@@ -125,6 +125,10 @@ CSRF_TRUSTED_ORIGINS = ('takeanumber.netlify.com', 'tan.vanderbilt.tech')
 SESSION_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SAMESITE = None
 
+if DEBUG:
+    CORS_ORIGIN_WHITELIST = ('localhost:3000')
+    CSRF_TRUSTED_ORIGINS = ('localhost:3000')
+
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
@@ -140,4 +144,7 @@ elif 'DYNO' in os.environ:
     # Activate Django-Heroku.
     django_heroku.settings(locals())
 else:
-    DATABASES['default'] = dj_database_url.config()
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR , 'db.sqlite3'),
+    }
