@@ -16,7 +16,7 @@ office_hours_state: Dict[uuid.UUID, ClassQueue] = {}
 
 
 def random_join_code() -> str:
-    return ''.join(random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    return ''.join(random.choice('0123456789ABCDEFGHJKLMNPQRTUVWXYZ')
                    for i in range(6))
 
 
