@@ -114,13 +114,14 @@ STATIC_URL = '/static/'
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
-CORS_ORIGIN_ALLOW_ALL = True
-#CORS_ORIGIN_WHITELIST = ['takeanumber.netlify.com']
+#CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = ('takeanumber.netlify.com', 'tan.vanderbilt.tech')
 CORS_ALLOW_CREDENTIALS = True
 #CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 #CSRF_USE_SESSIONS = True
 #CSRF_COOKIE_HTTPONLY = False
+CSRF_TRUSTED_ORIGINS = ('takeanumber.netlify.com', 'tan.vanderbilt.tech')
 SESSION_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SAMESITE = None
 
