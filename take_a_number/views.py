@@ -80,6 +80,7 @@ def courses_handler(request):
 
         # TODO return some info related to the new join code?
         return HttpResponse(json.dumps(new_uuid))
+    return HttpResponseBadRequest(content='Only one course can exist at this time')
 
 
 def course_office_hours(request, course_id):
