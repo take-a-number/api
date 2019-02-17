@@ -79,7 +79,7 @@ def courses_handler(request):
         #     return HttpResponseBadRequest(content='Oops, you missed a field!')
 
         # TODO return some info related to the new join code?
-        return HttpResponse(json.dumps(new_uuid))
+        # return HttpResponse(json.dumps(new_uuid))
 
 
 def course_office_hours(request, course_id):
