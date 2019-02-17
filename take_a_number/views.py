@@ -55,7 +55,7 @@ def courses_handler(request):
         for course in course_list:
             del course['_state'] # make the course serializable
         return HttpResponse(json.dumps(course_list, cls=UUIDEncoder))
-    elif request.method == 'PUT':  # Create a course
+    # elif request.method == 'PUT':  # Create a course
         # json_req = json.loads(request.body)
         # if json_req is None:
         #     return HttpResponseBadRequest()
