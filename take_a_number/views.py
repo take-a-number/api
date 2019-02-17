@@ -55,31 +55,31 @@ def courses_handler(request):
         for course in course_list:
             del course['_state'] # make the course serializable
         return HttpResponse(json.dumps(course_list, cls=UUIDEncoder))
-    # elif request.method == 'PUT':  # Create a course
-        # json_req = json.loads(request.body)
-        # if json_req is None:
-        #     return HttpResponseBadRequest()
-        # course_data: Dict[str, str] = json.loads(json_req)
-        # try: # validate form fields using a try-except
-        #     new_uuid = str(uuid.uuid4())
-        #     email = course_data['email']
-        #     name = course_data['description']
-        #     abbr = course_data['abbreviation']
-        #     if 'school' in course_data.keys():
-        #         school = course_data['school']
-        #     else:
-        #         school = 'Vanderbilt University'
+    elif request.method == 'PUT' and len(Course.objects) == 0:  # Create a course
+        json_req = json.loads(request.body)
+        if json_req is None:
+            return HttpResponseBadRequest()
+        course_data: Dict[str, str] = json.loads(json_req)
+        try: # validate form fields using a try-except
+            new_uuid = str(uuid.uuid4())
+            email = course_data['email']
+            name = course_data['description']
+            abbr = course_data['abbreviation']
+            if 'school' in course_data.keys():
+                school = course_data['school']
+            else:
+                school = 'Vanderbilt University'
 
-        #     # TODO use the email field for something meaningful
-        #     if list(Course.objects.filter(abbreviation=abbr)) != []:  # class already registered
-        #         return HttpResponseBadRequest(content='This course is already registered.')
-        #     class_instance = Course(new_uuid, school, name, abbr, email, random_join_code())
-        #     class_instance.save()
-        # except KeyError:  # some fields were not present
-        #     return HttpResponseBadRequest(content='Oops, you missed a field!')
+            # TODO use the email field for something meaningful
+            if list(Course.objects.filter(abbreviation=abbr)) != []:  # class already registered
+                return HttpResponseBadRequest(content='This course is already registered.')
+            class_instance = Course(new_uuid, school, name, abbr, email, random_join_code())
+            class_instance.save()
+        except KeyError:  # some fields were not present
+            return HttpResponseBadRequest(content='Oops, you missed a field!')
 
         # TODO return some info related to the new join code?
-        # return HttpResponse(json.dumps(new_uuid))
+        return HttpResponse(json.dumps(new_uuid))
 
 
 def course_office_hours(request, course_id):
