@@ -55,7 +55,9 @@ def courses_handler(request):
         for course in course_list:
             del course['_state'] # make the course serializable
         return HttpResponse(json.dumps(course_list, cls=UUIDEncoder))
-    elif request.method == 'PUT' and Course.objects.count() == 0:  # Create a course
+    elif request.method == 'PUT':  # Create a course
+        if Course.objects.count() > 0:
+            return HttpResponseBadRequest(content='Only one course can be registered at this time')
         json_req = json.loads(request.body)
         if json_req is None:
             return HttpResponseBadRequest()
@@ -80,7 +82,6 @@ def courses_handler(request):
 
         # TODO return some info related to the new join code?
         return HttpResponse(json.dumps(new_uuid))
-    return HttpResponseBadRequest(content='Only one course can exist at this time')
 
 
 def course_office_hours(request, course_id):
