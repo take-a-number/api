@@ -226,6 +226,9 @@ def course_office_hours_teaching_assistants(request, course_id):
 
     # TA updates own state; does not do anything yet
     elif request.method == 'POST':
+        if len(request.body) == 0:
+            session_dict = office_hours_state[course_id]
+            teaching_assistant.stopHelping()
         student_json = json.loads(request.body)
         # check that student json exists and has a valid id
         if student_json is None:
